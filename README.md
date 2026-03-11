@@ -91,30 +91,42 @@ Point Sigil at any GitHub or Azure DevOps repository and a developer's username.
 ## ⬡ How Sigil Works
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                                                                     │
-│   ① POINT                ② HARVEST               ③ DISTIL          │
-│                                                                     │
-│   Give Sigil a repo      Sigil fetches all        Claude reads      │
-│   URL and a username.    commits, diffs, PRs,     everything and    │
-│                          comment threads,          performs a deep   │
-│   GitHub or Azure        work items, and the      intellectual      │
-│   DevOps — both          full repo tree.          autopsy.          │
-│   supported natively.                                               │
-│                                                                     │
-│   ④ GENERATE                                                        │
-│                                                                     │
-│   Three artifacts land on disk under personas/:                     │
-│   · profile.json  →  skill_tree, feature_areas, patterns,          │
-│                       engineering_philosophy, superpower,           │
-│                       commits_analyzed with clickable SHA links     │
-│   · identity.md   →  who this engineer IS                          │
-│   · soul.md       →  how they THINK and CODE                       │
-│                                                                     │
-│   Drop identity.md + soul.md into Claude Code, any Claude-         │
-│   powered agent system, or the raw Anthropic API. Done.            │
-│                                                                     │
-└─────────────────────────────────────────────────────────────────────┘
+ ╔══════════════════════╗     ╔══════════════════════╗     ╔══════════════════════╗
+ ║  ① POINT             ║     ║  ② HARVEST           ║     ║  ③ DISTIL            ║
+ ╠══════════════════════╣     ╠══════════════════════╣     ╠══════════════════════╣
+ ║ Repo URL             ║     ║  Git commits         ║     ║                      ║
+ ║ + username           ║────▶║  Code diffs          ║────▶║  Claude Sonnet       ║
+ ║                      ║     ║  Pull requests       ║     ║  deep analysis       ║
+ ║ GitHub or Azure      ║     ║  PR comment threads  ║     ║                      ║
+ ║ DevOps — both        ║     ║  Work items          ║     ║  Skill inference     ║
+ ║ supported natively   ║     ║  Repo tree           ║     ║  Pattern extraction  ║
+ ╚══════════════════════╝     ║  Key file contents   ║     ║  Philosophy mining   ║
+                              ╚══════════════════════╝     ╚══════════╦═══════════╝
+                                                                       │
+                                          ╔════════════════════════════╝
+                                          │
+                                          ▼
+                              ╔══════════════════════╗
+                              ║  ④ GENERATE          ║
+                              ╠══════════════════════╣
+                              ║                      ║
+                              ║  personas/           ║
+                              ║  ├── profile.json    ║
+                              ║  │   skill_tree      ║
+                              ║  │   feature_areas   ║
+                              ║  │   patterns        ║
+                              ║  │   commits_analyzed║
+                              ║  ├── identity.md ────╫──▶ who they ARE
+                              ║  └── soul.md ────────╫──▶ how they THINK
+                              ║                      ║
+                              ╚══════════════════════╝
+                                          │
+                              ┌───────────┴───────────┐
+                              ▼                       ▼
+                    ╔══════════════════╗   ╔══════════════════╗
+                    ║  Claude Code     ║   ║  Any Claude API  ║
+                    ║  agent system    ║   ║  integration     ║
+                    ╚══════════════════╝   ╚══════════════════╝
 ```
 
 ---
