@@ -510,21 +510,25 @@ function openChat() {
   if (!currentProfile) return;
   const p = currentProfile;
 
+  // Resolve display name: profile fields → cache key username → fallback
+  const keyUsername = (cacheKey || '').split('::')[1] || '';
+  const displayName = p.name || p.username || keyUsername || 'this developer';
+
   // Avatar
   const wrap = document.getElementById('chat-avatar-wrap');
-  const initial = (p.name || p.username || '?')[0].toUpperCase();
+  const initial = displayName[0].toUpperCase();
   wrap.innerHTML = p.avatar_url
     ? `<img class="chat-header-avatar" src="${p.avatar_url}" onerror="this.outerHTML='<div class=\\'chat-header-avatar-fb\\'>${initial}</div>'">`
     : `<div class="chat-header-avatar-fb">${initial}</div>`;
 
-  document.getElementById('chat-header-name').textContent = p.name || p.username;
+  document.getElementById('chat-header-name').textContent = displayName;
 
   // Reset conversation
   chatHistory = [];
   const msgs = document.getElementById('chat-messages');
   msgs.innerHTML = '';
   appendBubble('assistant',
-    `Hey! I'm ${p.name || p.username}. Ask me anything — my approach to architecture, code reviews, debugging, tech choices. What's on your mind?`
+    `Hey! I'm **${displayName}**. Ask me anything — my approach to architecture, code reviews, debugging, tech choices. What's on your mind?`
   );
 
   document.getElementById('chat-panel').classList.add('open');
