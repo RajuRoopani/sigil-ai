@@ -210,8 +210,11 @@
     /* ── PAST PROFILES ── */
     #past-section{max-width:1200px;margin:0 auto;padding:0 2rem 3rem;position:relative;z-index:1}
     .past-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem}
-    .past-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1rem;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:.9rem}
+    .past-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1rem;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:.9rem;position:relative}
     .past-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+    .past-card:hover .delete-btn{opacity:1}
+    .delete-btn{position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:50%;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:#f87171;font-size:.7rem;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transition:all .15s;z-index:2}
+    .delete-btn:hover{background:rgba(239,68,68,.28);border-color:#f87171;transform:scale(1.15)}
     .past-avatar{width:42px;height:42px;border-radius:50%;border:2px solid var(--border)}
     .past-name{font-weight:700;font-size:.88rem}
     .past-repo{font-size:.72rem;color:var(--text-3);margin-top:.1rem}
@@ -1112,9 +1115,23 @@ async function loadPastProfiles() {
           <div class="past-repo">${p.repo}</div>
           <div class="past-headline">${p.headline || ''}</div>
         </div>
+        <button class="delete-btn" title="Delete profile" onclick="deleteProfile(event,'${p.cache_key}')">✕</button>
       </div>
     `).join('');
   } catch {}
+}
+
+async function deleteProfile(event, key) {
+  event.stopPropagation();
+  try {
+    const res = await fetch(`${API}/api/profiles/${encodeURIComponent(key)}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error(`Delete failed (${res.status})`);
+    // If the deleted profile is currently open, go back to home
+    if (cacheKey === key) showHome();
+    loadPastProfiles();
+  } catch (err) {
+    showError(err.message);
+  }
 }
 
 async function loadProfile(key, push = true) {
