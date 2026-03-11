@@ -1,13 +1,49 @@
 from __future__ import annotations
 import json
+import re
 import asyncio
 import httpx
 from anthropic import AsyncAnthropic
+from fastapi import HTTPException
 from config import settings
 import github_client as gh
 import ado_client as ado
 
 client = AsyncAnthropic(api_key=settings.anthropic_api_key)
+
+# ── Response helpers ─────────────────────────────────────────────────────────
+
+def _extract_profile_json(msg) -> dict:
+    """
+    Parse the profile JSON from a Claude message.
+    Raises HTTPException(500) with a clear message if:
+    - the response was truncated (stop_reason == max_tokens)
+    - the JSON is malformed
+    """
+    if msg.stop_reason == "max_tokens":
+        raise HTTPException(
+            status_code=500,
+            detail=(
+                "Claude's response was truncated — the profile JSON is incomplete. "
+                "This usually means the commit history is very large. "
+                "Try setting MAX_COMMITS to a lower value (e.g. 40) in your .env, "
+                "or set LOOKBACK_DAYS to a shorter window."
+            ),
+        )
+    raw = msg.content[0].text.strip()
+    # Strip markdown fences if present
+    if raw.startswith("```"):
+        raw = raw.split("```")[1]
+        if raw.startswith("json"):
+            raw = raw[4:]
+    raw = raw.strip()
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Claude returned malformed JSON: {e}. Raw start: {raw[:200]!r}",
+        )
 
 # ── Sampling helpers ────────────────────────────────────────────────────────
 
@@ -318,19 +354,10 @@ async def analyze(owner: str, repo: str, username: str) -> dict:
     )
     msg = await client.messages.create(
         model=settings.model,
-        max_tokens=4096,
+        max_tokens=8192,
         messages=[{"role": "user", "content": prompt}],
     )
-    raw = msg.content[0].text.strip()
-
-    # Strip markdown fences if present
-    if raw.startswith("```"):
-        raw = raw.split("```")[1]
-        if raw.startswith("json"):
-            raw = raw[4:]
-    raw = raw.strip()
-
-    profile = json.loads(raw)
+    profile = _extract_profile_json(msg)
 
     # Generate identity.md and soul.md in parallel
     id_msg, soul_msg = await asyncio.gather(
@@ -452,18 +479,10 @@ async def analyze_ado(org: str, project: str, repo: str, username: str) -> dict:
     )
     msg = await client.messages.create(
         model=settings.model,
-        max_tokens=4096,
+        max_tokens=8192,
         messages=[{"role": "user", "content": prompt}],
     )
-    raw = msg.content[0].text.strip()
-
-    if raw.startswith("```"):
-        raw = raw.split("```")[1]
-        if raw.startswith("json"):
-            raw = raw[4:]
-    raw = raw.strip()
-
-    profile = json.loads(raw)
+    profile = _extract_profile_json(msg)
 
     id_msg, soul_msg = await asyncio.gather(
         client.messages.create(
