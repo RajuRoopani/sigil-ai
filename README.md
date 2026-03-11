@@ -276,33 +276,33 @@ curl -X POST http://localhost:8003/api/analyze \
 
 ---
 
-## ⟡ Pitch Deck
+## ⟡ Deck
 
 <table>
 <tr>
 <td width="50%">
 <img src="screenshots/pitch-slide1.png" width="100%"/>
-<br/><sub><b>The Problem</b> — why institutional knowledge evaporates</sub>
+<br/><sub><b>Opening</b> — the developer intelligence platform, built on commit evidence</sub>
 </td>
 <td width="50%">
 <img src="screenshots/pitch-slide2.png" width="100%"/>
-<br/><sub><b>The Stakes</b> — what teams lose when senior engineers leave</sub>
+<br/><sub><b>The Problem</b> — knowledge that evaporates when engineers leave</sub>
 </td>
 </tr>
 <tr>
 <td width="50%">
 <img src="screenshots/pitch-slide4.png" width="100%"/>
-<br/><sub><b>The Solution</b> — how Sigil reads, distills, and deploys expertise</sub>
+<br/><sub><b>The Solution</b> — read the repo, extract the mind, deploy the expertise</sub>
 </td>
 <td width="50%">
-<img src="screenshots/pitch-slide9.png" width="100%"/>
-<br/><sub><b>Business Model</b> — pricing tiers and enterprise positioning</sub>
+<img src="screenshots/pitch-slide9-new.png" width="100%"/>
+<br/><sub><b>Try It</b> — 7 signals, 3 artifacts, 0 databases. Run it on your team today</sub>
 </td>
 </tr>
 </table>
 
 <div align="center">
-<sub>View the full pitch deck at <code>/pitch</code> when the server is running.</sub>
+<sub>View the full 9-slide deck at <code>http://localhost:8003/pitch</code> when the server is running.</sub>
 </div>
 
 ---
