@@ -45,17 +45,15 @@ def _extract_profile_json(msg) -> dict:
             detail=f"Claude returned malformed JSON: {e}. Raw start: {raw[:200]!r}",
         )
 
-# ── Sampling helpers ────────────────────────────────────────────────────────
+def _diff_budget(n_commits: int) -> int:
+    """Per-commit diff char budget that keeps total prompt under ~160K tokens.
 
-def _sample_diffs(commits: list[dict], sample: int = 20) -> list[dict]:
-    """Pick a diverse sample: first 5, last 5, and evenly spread from middle."""
-    if len(commits) <= sample:
-        return commits
-    step = max(1, len(commits) // (sample - 10))
-    middle = commits[5:-5:step][: sample - 10]
-    return commits[:5] + middle + commits[-5:]
+    160K tokens × 4 chars/token = 640K chars available for diffs.
+    Min 600 chars (captures even tiny patches), max 6000 chars per commit.
+    """
+    return max(600, min(6000, 640_000 // max(n_commits, 1)))
 
-def _trim_diff(diff: str, max_chars: int = 3000) -> str:
+def _trim_diff(diff: str, max_chars: int = 6000) -> str:
     if len(diff) <= max_chars:
         return diff
     return diff[:max_chars] + "\n... [truncated]"
@@ -134,7 +132,7 @@ def _build_analysis_prompt(
 
     diff_samples = "\n\n---\n".join(
         f"Commit: {c['message'][:80]}\n{_trim_diff(c.get('diff',''))}"
-        for c in commit_summaries[:15]
+        for c in commit_summaries
         if c.get("diff")
     )
 
@@ -290,11 +288,9 @@ async def analyze(owner: str, repo: str, username: str) -> dict:
     if not commits:
         raise ValueError(f"No commits found for {username} in {owner}/{repo}")
 
-    # Sample commits for diff fetching (expensive)
-    sampled = _sample_diffs(commits, sample=20)
-
-    # Fetch commit details concurrently (with semaphore to avoid rate limits)
-    sem = asyncio.Semaphore(5)
+    # Fetch full diffs for ALL commits — budget adapts to commit count
+    per_diff_chars = _diff_budget(len(commits))
+    sem = asyncio.Semaphore(10)
 
     async def fetch_detail(commit: dict) -> dict:
         async with sem:
@@ -303,7 +299,7 @@ async def analyze(owner: str, repo: str, username: str) -> dict:
                 detail = await gh.get_commit_detail_json(owner, repo, sha)
                 files = detail.get("files", [])
                 diff_text = "\n".join(
-                    f.get("patch", "")[:800] for f in files[:8] if f.get("patch")
+                    f.get("patch", "")[:per_diff_chars] for f in files[:10] if f.get("patch")
                 )
                 return {
                     "sha": sha[:7],
@@ -312,7 +308,7 @@ async def analyze(owner: str, repo: str, username: str) -> dict:
                     "additions": detail.get("stats", {}).get("additions", 0),
                     "deletions": detail.get("stats", {}).get("deletions", 0),
                     "files": len(files),
-                    "file_names": [f["filename"] for f in files[:8]],
+                    "file_names": [f["filename"] for f in files[:10]],
                     "diff": diff_text,
                 }
             except Exception:
@@ -324,20 +320,7 @@ async def analyze(owner: str, repo: str, username: str) -> dict:
                     "file_names": [], "diff": "",
                 }
 
-    commit_summaries = await asyncio.gather(*[fetch_detail(c) for c in sampled])
-    commit_summaries = list(commit_summaries)
-
-    # Also add non-sampled commits (message only, no diff)
-    all_shas = {c["sha"][:7] for c in commit_summaries}
-    for c in commits:
-        if c["sha"][:7] not in all_shas:
-            commit_summaries.append({
-                "sha": c["sha"][:7],
-                "message": c["commit"]["message"].split("\n")[0],
-                "date": c["commit"]["author"]["date"],
-                "additions": 0, "deletions": 0, "files": 0,
-                "file_names": [], "diff": "",
-            })
+    commit_summaries = list(await asyncio.gather(*[fetch_detail(c) for c in commits]))
 
     pr_summaries = [
         {"number": p["number"], "title": p["title"], "body": p.get("body", "")}
@@ -410,10 +393,9 @@ async def analyze_ado(org: str, project: str, repo: str, username: str) -> dict:
     if not commits:
         raise ValueError(f"No commits found for {username} in {org}/{project}/{repo}")
 
-    # Sample commits for diff fetching
-    sampled = _sample_diffs(commits, sample=20)
-
-    sem = asyncio.Semaphore(5)
+    # Fetch full diffs for ALL commits — budget adapts to commit count
+    per_diff_chars = _diff_budget(len(commits))
+    sem = asyncio.Semaphore(10)
 
     async def fetch_detail(commit: dict) -> dict:
         async with sem:
@@ -423,7 +405,7 @@ async def analyze_ado(org: str, project: str, repo: str, username: str) -> dict:
                 detail = ado.normalize_commit_detail(detail_raw)
                 files = detail.get("files", [])
                 diff_text = "\n".join(
-                    f.get("patch", "")[:800] for f in files[:8] if f.get("patch")
+                    f.get("patch", "")[:per_diff_chars] for f in files[:10] if f.get("patch")
                 )
                 return {
                     "sha": sha[:7],
@@ -432,7 +414,7 @@ async def analyze_ado(org: str, project: str, repo: str, username: str) -> dict:
                     "additions": detail.get("stats", {}).get("additions", 0),
                     "deletions": detail.get("stats", {}).get("deletions", 0),
                     "files": len(files),
-                    "file_names": [f["filename"] for f in files[:8]],
+                    "file_names": [f["filename"] for f in files[:10]],
                     "diff": diff_text,
                 }
             except Exception:
@@ -444,19 +426,7 @@ async def analyze_ado(org: str, project: str, repo: str, username: str) -> dict:
                     "file_names": [], "diff": "",
                 }
 
-    commit_summaries = list(await asyncio.gather(*[fetch_detail(c) for c in sampled]))
-
-    # Add non-sampled commits (message only)
-    all_shas = {c["sha"] for c in commit_summaries}
-    for c in commits:
-        if c["sha"][:7] not in all_shas:
-            commit_summaries.append({
-                "sha": c["sha"][:7],
-                "message": c["commit"]["message"].split("\n")[0],
-                "date": c["commit"]["author"]["date"],
-                "additions": 0, "deletions": 0, "files": 0,
-                "file_names": [], "diff": "",
-            })
+    commit_summaries = list(await asyncio.gather(*[fetch_detail(c) for c in commits]))
 
     pr_summaries = [
         {

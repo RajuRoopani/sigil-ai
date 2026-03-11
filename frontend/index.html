@@ -473,6 +473,37 @@ let cacheKey = null;
 let lastRepo = null;
 let lastUsername = null;
 
+// ── URL routing ───────────────────────────────────────────────────────────────
+
+function _pushProfileUrl(key) {
+  const url = key ? '/?p=' + encodeURIComponent(key) : '/';
+  history.pushState({ cacheKey: key }, '', url);
+}
+
+function showHome() {
+  cacheKey = null;
+  currentProfile = null;
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('hero').style.display = '';
+  history.pushState({}, '', '/');
+}
+
+window.addEventListener('popstate', e => {
+  const key = e.state?.cacheKey;
+  if (key) {
+    loadProfile(key, false); // false = don't pushState again
+  } else {
+    showHome();
+  }
+});
+
+// On page load: auto-load profile from ?p= query param
+window.addEventListener('DOMContentLoaded', () => {
+  const p = new URLSearchParams(location.search).get('p');
+  if (p) loadProfile(p, false);
+});
+
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
 function fillExample(repo, username) {
@@ -672,8 +703,10 @@ function renderResults(p) {
   renderStrengths(p);
   renderCommitsAnalyzed(p);
   renderAgentFiles(p);
+  document.getElementById('hero').style.display = 'none';
   document.getElementById('results').style.display = 'block';
   document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+  if (cacheKey) _pushProfileUrl(cacheKey);
 }
 
 function renderProfileHero(p) {
@@ -1063,7 +1096,7 @@ async function loadPastProfiles() {
   } catch {}
 }
 
-async function loadProfile(key) {
+async function loadProfile(key, push = true) {
   try {
     const res = await fetch(`${API}/api/profiles/${encodeURIComponent(key)}`);
     if (!res.ok) throw new Error(`Profile not found (${res.status})`);
@@ -1079,6 +1112,7 @@ async function loadProfile(key) {
     document.getElementById('hero').style.display = 'none';
     document.getElementById('loading').style.display = 'none';
     renderResults(profile);
+    if (push) _pushProfileUrl(key);
   } catch (err) {
     showError(err.message);
   }
