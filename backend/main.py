@@ -111,6 +111,13 @@ def _parse_repo_url(repo_input: str) -> tuple[str, str, str]:
                 https://dev.azure.com/{org}/{project}/_git/{repo}
     """
     repo_input = repo_input.strip().rstrip("/")
+
+    # Internal cache-key format written by this server: ado:{org}/{project}/{repo}
+    if repo_input.startswith("ado:"):
+        parts = repo_input[4:].split("/")
+        if len(parts) == 3:
+            return "ado", f"{parts[0]}/{parts[1]}", parts[2]
+
     # Normalise: add scheme if bare domain given
     if repo_input.startswith("github.com/") or repo_input.startswith("dev.azure.com/"):
         repo_input = "https://" + repo_input
