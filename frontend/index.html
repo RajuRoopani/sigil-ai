@@ -236,10 +236,22 @@
     .chat-close-btn{background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--text-3);padding:.3rem .6rem;cursor:pointer;font-size:.8rem;transition:all .15s;flex-shrink:0}
     .chat-close-btn:hover{border-color:var(--accent);color:var(--accent)}
     .chat-messages{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.65rem}
-    .chat-bubble{max-width:88%;padding:.6rem .9rem;border-radius:12px;font-size:.84rem;line-height:1.6;white-space:pre-wrap;word-break:break-word}
-    .chat-bubble.user{align-self:flex-end;background:var(--accent);color:#fff;border-bottom-right-radius:3px}
+    .chat-bubble{max-width:88%;padding:.65rem 1rem;border-radius:12px;font-size:.84rem;line-height:1.6;word-break:break-word}
+    .chat-bubble.user{align-self:flex-end;background:var(--accent);color:#fff;border-bottom-right-radius:3px;white-space:pre-wrap}
     .chat-bubble.assistant{align-self:flex-start;background:var(--elevated);border:1px solid var(--border);color:var(--text-1);border-bottom-left-radius:3px}
-    .chat-bubble.thinking{align-self:flex-start;background:var(--elevated);border:1px solid var(--border);color:var(--text-3);font-style:italic;font-size:.78rem;animation:pulse 1.2s ease-in-out infinite}
+    .chat-bubble.assistant p{margin:.35rem 0}
+    .chat-bubble.assistant p:first-child{margin-top:0}
+    .chat-bubble.assistant p:last-child{margin-bottom:0}
+    .chat-bubble.assistant h1,.chat-bubble.assistant h2,.chat-bubble.assistant h3{font-size:.95rem;font-weight:700;margin:.6rem 0 .25rem;color:var(--text-0)}
+    .chat-bubble.assistant ul,.chat-bubble.assistant ol{padding-left:1.25rem;margin:.35rem 0}
+    .chat-bubble.assistant li{margin:.2rem 0}
+    .chat-bubble.assistant code{background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.25);border-radius:4px;padding:.1em .35em;font-family:'JetBrains Mono',monospace;font-size:.78rem;color:#c4b5fd}
+    .chat-bubble.assistant pre{background:rgba(0,0,0,.35);border:1px solid var(--border);border-radius:8px;padding:.75rem 1rem;overflow-x:auto;margin:.5rem 0}
+    .chat-bubble.assistant pre code{background:none;border:none;padding:0;font-size:.78rem;color:#e2e8f0}
+    .chat-bubble.assistant strong{color:var(--text-0);font-weight:600}
+    .chat-bubble.assistant em{color:var(--text-2);font-style:italic}
+    .chat-bubble.assistant blockquote{border-left:3px solid var(--accent);padding-left:.75rem;margin:.5rem 0;color:var(--text-2);font-style:italic}
+    .chat-bubble.thinking{align-self:flex-start;background:var(--elevated);border:1px solid var(--border);color:var(--text-3);font-style:italic;font-size:.78rem;animation:pulse 1.2s ease-in-out infinite;white-space:pre-wrap}
     @keyframes pulse{0%,100%{opacity:.5}50%{opacity:1}}
     .chat-input-row{padding:.75rem 1rem;border-top:1px solid var(--border);display:flex;gap:.5rem;flex-shrink:0;background:var(--elevated)}
     .chat-input{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.55rem .8rem;color:var(--text-1);font-size:.85rem;outline:none;transition:border-color .2s;resize:none;font-family:inherit;max-height:120px}
@@ -448,6 +460,18 @@
 <script>
 const API = 'http://localhost:8003';
 let currentProfile = null;
+
+// Configure marked: open links in new tab, no XSS
+marked.use({
+  renderer: (() => {
+    const r = new marked.Renderer();
+    r.link = (href, title, text) =>
+      `<a href="${href}" target="_blank" rel="noopener noreferrer"${title ? ` title="${title}"` : ''}>${text}</a>`;
+    return r;
+  })(),
+  gfm: true,
+  breaks: true,
+});
 let cacheKey = null;
 let lastRepo = null;
 let lastUsername = null;
@@ -517,10 +541,20 @@ function appendBubble(role, text) {
   const msgs = document.getElementById('chat-messages');
   const div = document.createElement('div');
   div.className = `chat-bubble ${role}`;
-  div.textContent = text;
+  if (role === 'assistant') {
+    div.innerHTML = marked.parse(text);
+  } else {
+    div.textContent = text;
+  }
   msgs.appendChild(div);
   msgs.scrollTop = msgs.scrollHeight;
   return div;
+}
+
+function updateBubble(div, text) {
+  div.innerHTML = marked.parse(text);
+  const msgs = document.getElementById('chat-messages');
+  msgs.scrollTop = msgs.scrollHeight;
 }
 
 function autoResize(el) {
