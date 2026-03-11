@@ -118,6 +118,38 @@ html, body {
   50% { transform: translateY(20px); opacity: 0.5; }
 }
 
+/* ── Top bar ── */
+#top-bar {
+  position: fixed;
+  top: 20px;
+  right: 28px;
+  z-index: 200;
+}
+#try-now-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 20px;
+  background: var(--accent);
+  color: #fff;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  text-decoration: none;
+  box-shadow: 0 0 20px rgba(99,102,241,.45), 0 4px 16px rgba(0,0,0,.4);
+  transition: all 0.2s;
+}
+#try-now-btn:hover {
+  background: var(--accent2);
+  box-shadow: 0 0 28px rgba(139,92,246,.6), 0 4px 20px rgba(0,0,0,.45);
+  transform: translateY(-1px);
+}
+#try-now-btn svg { flex-shrink: 0; }
+
 /* ── Navigation ── */
 #nav {
   position: fixed;
@@ -1489,6 +1521,16 @@ html, body {
     </div>
   </div>
 
+</div>
+
+<!-- ── Top bar ── -->
+<div id="top-bar">
+  <a href="/" id="try-now-btn">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <polygon points="5,3 19,12 5,21"/>
+    </svg>
+    Try Sigil Now
+  </a>
 </div>
 
 <!-- ── Navigation ── -->
