@@ -90,44 +90,10 @@ Point Sigil at any GitHub or Azure DevOps repository and a developer's username.
 
 ## ⬡ How Sigil Works
 
-```
- ╔══════════════════════╗     ╔══════════════════════╗     ╔══════════════════════╗
- ║  ① POINT             ║     ║  ② HARVEST           ║     ║  ③ DISTIL            ║
- ╠══════════════════════╣     ╠══════════════════════╣     ╠══════════════════════╣
- ║ Repo URL             ║     ║  Git commits         ║     ║                      ║
- ║ + username           ║────▶║  Code diffs          ║────▶║  Claude Sonnet       ║
- ║                      ║     ║  Pull requests       ║     ║  deep analysis       ║
- ║ GitHub or Azure      ║     ║  PR comment threads  ║     ║                      ║
- ║ DevOps — both        ║     ║  Work items          ║     ║  Skill inference     ║
- ║ supported natively   ║     ║  Repo tree           ║     ║  Pattern extraction  ║
- ╚══════════════════════╝     ║  Key file contents   ║     ║  Philosophy mining   ║
-                              ╚══════════════════════╝     ╚══════════╦═══════════╝
-                                                                       │
-                                          ╔════════════════════════════╝
-                                          │
-                                          ▼
-                              ╔══════════════════════╗
-                              ║  ④ GENERATE          ║
-                              ╠══════════════════════╣
-                              ║                      ║
-                              ║  personas/           ║
-                              ║  ├── profile.json    ║
-                              ║  │   skill_tree      ║
-                              ║  │   feature_areas   ║
-                              ║  │   patterns        ║
-                              ║  │   commits_analyzed║
-                              ║  ├── identity.md ────╫──▶ who they ARE
-                              ║  └── soul.md ────────╫──▶ how they THINK
-                              ║                      ║
-                              ╚══════════════════════╝
-                                          │
-                              ┌───────────┴───────────┐
-                              ▼                       ▼
-                    ╔══════════════════╗   ╔══════════════════╗
-                    ║  Claude Code     ║   ║  Any Claude API  ║
-                    ║  agent system    ║   ║  integration     ║
-                    ╚══════════════════╝   ╚══════════════════╝
-```
+<div align="center">
+<img src="screenshots/how-it-works.png" width="100%"/>
+<br/><sub><i>INPUT → HARVEST (7 signals) → DISTIL (Claude Sonnet) → GENERATE (3 artifacts) → DEPLOY</i></sub>
+</div>
 
 ---
 
