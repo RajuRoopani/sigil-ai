@@ -712,25 +712,33 @@ function renderCommitsAnalyzed(p) {
   }).join('');
 }
 
-function forceRefresh() {
+async function forceRefresh() {
   const repo = lastRepo || document.getElementById('repo-input').value.trim();
   const username = lastUsername || document.getElementById('username-input').value.trim();
-  if (!repo || !username) { runAnalysis(); return; }
-  document.getElementById('repo-input').value = repo;
-  document.getElementById('username-input').value = username;
-  // Patch runAnalysis to send force_refresh:true for this one call
-  const origAnalyze = window._origAnalyze;
-  fetch(`${API}/api/analyze`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ repo, username, force_refresh: true }),
-  }).then(r => r.json()).then(data => {
+  if (!repo || !username) return;
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('hero').style.display = 'none';
+  document.getElementById('loading').style.display = 'block';
+  try {
+    const res = await fetch(`${API}/api/analyze`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ repo, username, force_refresh: true }),
+    });
+    if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.detail||`HTTP ${res.status}`); }
+    const data = await res.json();
     currentProfile = data.profile;
     cacheKey = data.cache_key;
     lastRepo = repo;
     lastUsername = username;
+    document.getElementById('loading').style.display = 'none';
     renderResults(currentProfile);
-  }).catch(e => showError(e.message));
+    loadPastProfiles();
+  } catch (err) {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('results').style.display = 'block';
+    showError(err.message);
+  }
 }
 
 function openCommits() {
@@ -864,13 +872,24 @@ async function loadPastProfiles() {
 }
 
 async function loadProfile(key) {
-  const res = await fetch(`${API}/api/profiles`);
-  const profiles = await res.json();
-  // we need the full profile — trigger a re-analyze to get from cache
-  const [repoUser, username] = key.split('::');
-  document.getElementById('repo-input').value = repoUser;
-  document.getElementById('username-input').value = username;
-  runAnalysis();
+  try {
+    const res = await fetch(`${API}/api/profiles/${encodeURIComponent(key)}`);
+    if (!res.ok) throw new Error(`Profile not found (${res.status})`);
+    const profile = await res.json();
+    currentProfile = profile;
+    cacheKey = key;
+    // Reconstruct repo/username from cache key for forceRefresh to work
+    const parts = key.split('::');
+    lastUsername = parts[1] || '';
+    lastRepo = parts[0].replace(/^ado:/, ''); // strip internal prefix for display
+    document.getElementById('repo-input').value = lastRepo;
+    document.getElementById('username-input').value = lastUsername;
+    document.getElementById('hero').style.display = 'none';
+    document.getElementById('loading').style.display = 'none';
+    renderResults(profile);
+  } catch (err) {
+    showError(err.message);
+  }
 }
 
 function resetForm() {
