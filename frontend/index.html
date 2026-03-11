@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sigil — Turn Invisible Expertise into Tangible AI Agents</title>
   <script src="https://d3js.org/d3.v7.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked@4/marked.min.js"></script>
   <style>
     :root {
       --bg:       #04040A;
@@ -461,17 +461,14 @@
 const API = 'http://localhost:8003';
 let currentProfile = null;
 
-// Configure marked: open links in new tab, no XSS
-marked.use({
-  renderer: (() => {
-    const r = new marked.Renderer();
-    r.link = (href, title, text) =>
-      `<a href="${href}" target="_blank" rel="noopener noreferrer"${title ? ` title="${title}"` : ''}>${text}</a>`;
-    return r;
-  })(),
-  gfm: true,
-  breaks: true,
-});
+// Configure marked v4: synchronous, GFM, line breaks, links open in new tab
+marked.setOptions({ gfm: true, breaks: true });
+const _mdRenderer = new marked.Renderer();
+_mdRenderer.link = (href, title, text) =>
+  `<a href="${href}" target="_blank" rel="noopener noreferrer"${title ? ` title="${title}"` : ''}>${text}</a>`;
+function renderMarkdown(text) {
+  return marked.parse(text, { renderer: _mdRenderer });
+}
 let cacheKey = null;
 let lastRepo = null;
 let lastUsername = null;
@@ -546,7 +543,7 @@ function appendBubble(role, text) {
   const div = document.createElement('div');
   div.className = `chat-bubble ${role}`;
   if (role === 'assistant') {
-    div.innerHTML = marked.parse(text);
+    div.innerHTML = renderMarkdown(text);
   } else {
     div.textContent = text;
   }
@@ -556,7 +553,7 @@ function appendBubble(role, text) {
 }
 
 function updateBubble(div, text) {
-  div.innerHTML = marked.parse(text);
+  div.innerHTML = renderMarkdown(text);
   const msgs = document.getElementById('chat-messages');
   msgs.scrollTop = msgs.scrollHeight;
 }
@@ -1021,7 +1018,7 @@ let activeTab = 'identity';
 
 function renderAgentFiles(p) {
   activeTab = 'identity';
-  document.getElementById('md-viewer').innerHTML = marked.parse(p.identity_md || '');
+  document.getElementById('md-viewer').innerHTML = renderMarkdown(p.identity_md || '');
   document.getElementById('export-btns').innerHTML = `
     <button class="btn btn-primary" onclick="downloadFile('identity')">⬇ Download identity.md</button>
     <button class="btn btn-primary" onclick="downloadFile('soul')">⬇ Download soul.md</button>
@@ -1032,7 +1029,7 @@ function switchTab(tab) {
   activeTab = tab;
   document.querySelectorAll('.md-tab').forEach(t => t.classList.toggle('active', t.textContent.includes(tab === 'identity' ? 'identity' : 'soul')));
   const content = tab === 'identity' ? currentProfile.identity_md : currentProfile.soul_md;
-  document.getElementById('md-viewer').innerHTML = marked.parse(content || '');
+  document.getElementById('md-viewer').innerHTML = renderMarkdown(content || '');
 }
 
 function downloadFile(type) {
