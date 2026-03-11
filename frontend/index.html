@@ -133,18 +133,21 @@
     .file-chip{font-size:.65rem;padding:2px 7px;border-radius:4px;background:var(--elevated);color:var(--text-3);border:1px solid var(--border);font-family:monospace}
 
     /* ── COMMITS LIST ── */
-    .commits-section{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.25rem;margin-bottom:2rem}
+    .commits-section{background:var(--surface);border:1px solid rgba(124,58,237,.3);border-radius:16px;padding:1.25rem;margin-bottom:2rem}
     .commits-toggle{display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
     .commits-toggle-icon{transition:transform .2s;font-size:.8rem;color:var(--text-3)}
     .commits-toggle.open .commits-toggle-icon{transform:rotate(180deg)}
-    .commits-list{margin-top:1rem;display:flex;flex-direction:column;gap:.35rem;max-height:400px;overflow-y:auto}
-    .commit-row{display:flex;align-items:baseline;gap:.6rem;padding:.3rem .5rem;border-radius:6px;transition:background .15s}
-    .commit-row:hover{background:var(--elevated)}
-    .commit-sha{font-family:monospace;font-size:.72rem;color:var(--accent2);flex-shrink:0;text-decoration:none}
-    .commit-sha:hover{text-decoration:underline}
-    .commit-date{font-size:.7rem;color:var(--text-3);flex-shrink:0;width:80px}
-    .commit-msg{font-size:.78rem;color:var(--text-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
-    .commit-files{font-size:.68rem;color:var(--text-3);flex-shrink:0;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .commits-list{margin-top:1rem;display:flex;flex-direction:column;gap:.2rem;max-height:520px;overflow-y:auto}
+    .commit-row{display:grid;grid-template-columns:auto 72px 1fr auto;align-items:center;gap:.7rem;padding:.4rem .6rem;border-radius:8px;transition:background .15s}
+    .commit-row:hover{background:rgba(124,58,237,.08)}
+    .commit-sha{font-family:monospace;font-size:.73rem;color:var(--accent2);flex-shrink:0;text-decoration:none;font-weight:600;letter-spacing:.3px;border:1px solid rgba(124,58,237,.25);border-radius:4px;padding:1px 5px;background:rgba(124,58,237,.07)}
+    .commit-sha:hover{background:rgba(124,58,237,.18);border-color:rgba(124,58,237,.5)}
+    .commit-date{font-size:.69rem;color:var(--text-3);flex-shrink:0}
+    .commit-msg{font-size:.78rem;color:var(--text-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .commit-files{font-size:.66rem;color:var(--text-3);text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px}
+    .commit-files span{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:3px;padding:0 4px;margin-left:2px}
+    .skill-commits-badge{font-size:.63rem;font-family:monospace;color:var(--accent2);background:rgba(124,58,237,.1);border:1px solid rgba(124,58,237,.25);border-radius:4px;padding:1px 5px;cursor:pointer;flex-shrink:0;text-decoration:none}
+    .skill-commits-badge:hover{background:rgba(124,58,237,.22)}
 
     /* ── SKILLS GRID ── */
     .skills-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1rem;margin-bottom:2rem}
@@ -341,14 +344,21 @@
 
   <!-- Commits Analyzed -->
   <div id="commits-section" class="commits-section" style="display:none">
-    <div class="commits-toggle" id="commits-toggle" onclick="toggleCommits()">
-      <div style="display:flex;align-items:center;gap:.6rem">
-        <span style="font-size:.7rem;font-weight:700;color:var(--text-3);letter-spacing:1px;text-transform:uppercase">Commits Analyzed</span>
+    <div class="commits-toggle open" id="commits-toggle" onclick="toggleCommits()">
+      <div style="display:flex;align-items:center;gap:.75rem">
+        <span style="font-size:.7rem;font-weight:700;color:var(--accent2);letter-spacing:1px;text-transform:uppercase">⬡ Evidence — Commits Analyzed</span>
         <span id="commits-count" style="font-size:.72rem;color:var(--text-3)"></span>
+        <span style="font-size:.67rem;color:var(--text-3);font-style:italic">click any SHA to verify on GitHub</span>
       </div>
-      <span class="commits-toggle-icon">▼</span>
+      <span class="commits-toggle-icon" style="transform:rotate(180deg)">▼</span>
     </div>
-    <div class="commits-list" id="commits-list" style="display:none"></div>
+    <div style="display:grid;grid-template-columns:auto 72px 1fr auto;gap:.4rem .7rem;padding:.4rem .6rem;margin-top:.75rem;border-bottom:1px solid var(--border);margin-bottom:.25rem">
+      <span style="font-size:.62rem;color:var(--text-3);text-transform:uppercase;letter-spacing:.8px">SHA</span>
+      <span style="font-size:.62rem;color:var(--text-3);text-transform:uppercase;letter-spacing:.8px">Date</span>
+      <span style="font-size:.62rem;color:var(--text-3);text-transform:uppercase;letter-spacing:.8px">Message</span>
+      <span style="font-size:.62rem;color:var(--text-3);text-transform:uppercase;letter-spacing:.8px;text-align:right">Files</span>
+    </div>
+    <div class="commits-list" id="commits-list"></div>
   </div>
 
   <!-- Agent Files -->
@@ -663,24 +673,43 @@ function renderCommitsAnalyzed(p) {
   const section = document.getElementById('commits-section');
   if (!commits.length) { section.style.display = 'none'; return; }
   section.style.display = 'block';
-  document.getElementById('commits-count').textContent = `(${commits.length} commits)`;
+  document.getElementById('commits-count').textContent = `${commits.length} commits`;
 
-  document.getElementById('commits-list').innerHTML = commits.map(c => `
-    <div class="commit-row">
-      <a class="commit-sha" href="${c.url}" target="_blank" rel="noopener">${c.sha.slice(0,7)}</a>
+  document.getElementById('commits-list').innerHTML = commits.map((c, i) => {
+    const files = c.files || [];
+    const filePills = files.slice(0, 3).map(f =>
+      `<span>${f.split('/').pop()}</span>`
+    ).join('') + (files.length > 3 ? `<span>+${files.length - 3}</span>` : '');
+    const filesHtml = files.length
+      ? `<span class="commit-files" title="${files.join('\n')}">${filePills}</span>`
+      : '<span></span>';
+    return `
+    <div class="commit-row" style="${i % 2 === 0 ? '' : 'background:rgba(255,255,255,.018)'}">
+      <a class="commit-sha" href="${c.url}" target="_blank" rel="noopener" title="Open commit on GitHub">${c.sha.slice(0,7)}</a>
       <span class="commit-date">${c.date}</span>
       <span class="commit-msg" title="${(c.message||'').replace(/"/g,'&quot;')}">${c.message || ''}</span>
-      ${c.files && c.files.length ? `<span class="commit-files" title="${c.files.join(', ')}">${c.files.slice(0,2).map(f=>f.split('/').pop()).join(', ')}${c.files.length>2?' +'+( c.files.length-2):''}</span>` : ''}
-    </div>
-  `).join('');
+      ${filesHtml}
+    </div>`;
+  }).join('');
+}
+
+function openCommits() {
+  const list = document.getElementById('commits-list');
+  const toggle = document.getElementById('commits-toggle');
+  const icon = toggle.querySelector('.commits-toggle-icon');
+  list.style.display = 'flex';
+  toggle.classList.add('open');
+  icon.style.transform = 'rotate(180deg)';
 }
 
 function toggleCommits() {
   const list = document.getElementById('commits-list');
   const toggle = document.getElementById('commits-toggle');
+  const icon = toggle.querySelector('.commits-toggle-icon');
   const open = list.style.display === 'none';
   list.style.display = open ? 'flex' : 'none';
   toggle.classList.toggle('open', open);
+  icon.style.transform = open ? 'rotate(180deg)' : '';
 }
 
 function renderSkillsGrid(p) {
@@ -698,7 +727,10 @@ function renderSkillsGrid(p) {
           <div class="skill-row">
             <div class="skill-row-top">
               <span class="skill-name">${s.name}</span>
-              <span class="skill-pct">${s.level}%</span>
+              <div style="display:flex;align-items:center;gap:.4rem">
+                ${s.commits ? `<a class="skill-commits-badge" href="#commits-section" onclick="openCommits()" title="Based on ${s.commits} commits — click to see them">⬡ ${s.commits} commits</a>` : ''}
+                <span class="skill-pct">${s.level}%</span>
+              </div>
             </div>
             <div class="skill-bar"><div class="skill-bar-fill" style="width:${s.level}%;background:${cat.color}88"></div></div>
             ${s.evidence ? `<div class="skill-evidence">${s.evidence}</div>` : ''}
