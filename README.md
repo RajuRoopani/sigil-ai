@@ -1,17 +1,6 @@
 <div align="center">
 
-```
-███████╗██╗ ██████╗ ██╗██╗      █████╗ ██╗
-██╔════╝██║██╔════╝ ██║██║     ██╔══██╗██║
-███████╗██║██║  ███╗██║██║     ███████║██║
-╚════██║██║██║   ██║██║██║     ██╔══██║╚═╝
-███████║██║╚██████╔╝██║███████╗██║  ██║██╗
-╚══════╝╚═╝ ╚═════╝ ╚═╝╚══════╝╚═╝  ╚═╝╚═╝
-```
-
-### Turn invisible expertise into tangible AI agents.
-
-*The best engineers leave traces everywhere. Sigil reads them.*
+<img src="screenshots/sigil-banner.svg" width="100%" alt="Sigil — Turn invisible expertise into tangible AI agents"/>
 
 <br/>
 

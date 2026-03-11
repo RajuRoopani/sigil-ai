@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 200" width="900" height="200">
+  <defs>
+    <!-- Background gradient -->
+    <linearGradient id="bg" x1="0" y1="0" x2="900" y2="200" gradientUnits="userSpaceOnUse">
+      <stop offset="0%"   stop-color="#0d0618"/>
+      <stop offset="50%"  stop-color="#0a0414"/>
+      <stop offset="100%" stop-color="#06020f"/>
+    </linearGradient>
+
+    <!-- Purple glow gradient for text -->
+    <linearGradient id="wordmark" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%"   stop-color="#a78bfa"/>
+      <stop offset="45%"  stop-color="#c084fc"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+
+    <!-- Icon ring gradient -->
+    <linearGradient id="ring" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0%"   stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#a855f7"/>
+    </linearGradient>
+
+    <!-- Glow filter for icon -->
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3.5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+
+    <!-- Subtle text glow -->
+    <filter id="textglow" x="-10%" y="-30%" width="120%" height="160%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+
+    <!-- Clip path for rounded rect bg -->
+    <clipPath id="clip"><rect rx="18" width="900" height="200"/></clipPath>
+  </defs>
+
+  <!-- Background -->
+  <rect width="900" height="200" rx="18" fill="url(#bg)"/>
+
+  <!-- Subtle grid lines -->
+  <g opacity="0.04" stroke="#a78bfa" stroke-width="0.8">
+    <line x1="0" y1="50"  x2="900" y2="50"/>
+    <line x1="0" y1="100" x2="900" y2="100"/>
+    <line x1="0" y1="150" x2="900" y2="150"/>
+    <line x1="200" y1="0" x2="200" y2="200"/>
+    <line x1="450" y1="0" x2="450" y2="200"/>
+    <line x1="700" y1="0" x2="700" y2="200"/>
+  </g>
+
+  <!-- Left ambient glow blob -->
+  <ellipse cx="110" cy="100" rx="90" ry="70" fill="#7c3aed" opacity="0.08"/>
+  <!-- Right ambient glow blob -->
+  <ellipse cx="790" cy="100" rx="70" ry="55" fill="#a855f7" opacity="0.06"/>
+
+  <!-- Border ring -->
+  <rect width="900" height="200" rx="18" fill="none" stroke="#7c3aed" stroke-width="1.2" opacity="0.35"/>
+
+  <!-- ── Icon (centered vertically at x=88) ── -->
+  <g transform="translate(56, 36)" filter="url(#glow)">
+    <!-- Outer ring -->
+    <circle cx="32" cy="32" r="30" fill="none" stroke="url(#ring)" stroke-width="1.5"/>
+    <!-- 10-point star -->
+    <polygon
+      points="32,4 36.5,19.5 52,19.5 39.5,29 44,44.5 32,35.5 20,44.5 24.5,29 12,19.5 27.5,19.5"
+      fill="rgba(124,58,237,0.15)"
+      stroke="#8b5cf6"
+      stroke-width="1.2"
+      stroke-linejoin="round"/>
+    <!-- Inner circle -->
+    <circle cx="32" cy="32" r="7" fill="rgba(168,85,247,0.25)" stroke="#a855f7" stroke-width="1.2"/>
+    <!-- Inner dot -->
+    <circle cx="32" cy="32" r="2.5" fill="#c084fc" opacity="0.9"/>
+  </g>
+
+  <!-- ── Wordmark "SIGIL" ── -->
+  <text
+    x="158" y="118"
+    font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif"
+    font-weight="800"
+    font-size="72"
+    letter-spacing="-1"
+    fill="url(#wordmark)"
+    filter="url(#textglow)">SIGIL</text>
+
+  <!-- Thin vertical separator -->
+  <line x1="445" y1="52" x2="445" y2="148" stroke="#7c3aed" stroke-width="1" opacity="0.4"/>
+
+  <!-- ── Right side: taglines ── -->
+  <text
+    x="470" y="90"
+    font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif"
+    font-size="17"
+    font-weight="600"
+    fill="#e9d5ff"
+    opacity="0.95">Turn invisible expertise into tangible AI agents.</text>
+
+  <text
+    x="470" y="122"
+    font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif"
+    font-size="13.5"
+    font-weight="400"
+    fill="#a78bfa"
+    opacity="0.7"
+    font-style="italic">The best engineers leave traces everywhere. Sigil reads them.</text>
+
+  <!-- Bottom accent bar -->
+  <rect x="56" y="165" width="120" height="2" rx="1" fill="url(#wordmark)" opacity="0.6"/>
+</svg>
