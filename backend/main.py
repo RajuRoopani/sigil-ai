@@ -168,6 +168,13 @@ class AnalyzeRequest(BaseModel):
     username: str
     force_refresh: bool = False     # bypass cache and re-analyze
 
+class ChatMessage(BaseModel):
+    role: str       # "user" or "assistant"
+    content: str
+
+class ChatRequest(BaseModel):
+    messages: list[ChatMessage]
+
 # ── Routes ────────────────────────────────────────────────────────────────────
 
 @app.get("/health")
@@ -279,6 +286,45 @@ async def export_soul(cache_key: str):
         _cache[cache_key].get("soul_md", ""),
         headers={"Content-Disposition": 'attachment; filename="soul.md"'},
     )
+
+# ── Chat endpoint ─────────────────────────────────────────────────────────────
+
+@app.post("/api/chat/{cache_key:path}")
+@limiter.limit("60/minute")
+async def chat(request: Request, cache_key: str, body: ChatRequest):
+    if cache_key not in _cache:
+        raise HTTPException(404, "Profile not found — run analysis first")
+
+    profile = _cache[cache_key]
+    persona_dir = _persona_path(cache_key)
+
+    # Prefer disk files (authoritative); fall back to in-memory profile fields
+    identity_md = (persona_dir / "identity.md").read_text() if (persona_dir / "identity.md").exists() else profile.get("identity_md", "")
+    soul_md     = (persona_dir / "soul.md").read_text()     if (persona_dir / "soul.md").exists()     else profile.get("soul_md", "")
+
+    name = profile.get("name") or profile.get("username") or "this developer"
+    headline = profile.get("headline", "")
+    tags = ", ".join(profile.get("tags") or [])
+
+    system_prompt = (
+        f"You ARE {name} — {headline}.\n"
+        f"Core expertise: {tags}.\n\n"
+        "Respond EXACTLY as this developer would in conversation. "
+        "Use their vocabulary, opinionated views, and the depth their commit history reveals. "
+        "Never break character. Be direct, technically precise, and authentic.\n\n"
+        f"## Your Identity\n{identity_md}\n\n"
+        f"## Your Engineering Soul & Working Style\n{soul_md}"
+    )
+
+    from anthropic import AsyncAnthropic
+    claude = AsyncAnthropic(api_key=settings.anthropic_api_key)
+    msg = await claude.messages.create(
+        model=settings.model,
+        max_tokens=1024,
+        system=system_prompt,
+        messages=[{"role": m.role, "content": m.content} for m in body.messages],
+    )
+    return {"response": msg.content[0].text if msg.content else ""}
 
 # ── Serve frontend ────────────────────────────────────────────────────────────
 

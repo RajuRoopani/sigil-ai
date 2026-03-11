@@ -222,6 +222,32 @@
     ::-webkit-scrollbar{width:4px;height:4px}
     ::-webkit-scrollbar-track{background:transparent}
     ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+    /* ── CHAT PANEL ── */
+    #chat-panel{position:fixed;top:0;right:0;width:420px;height:100vh;background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;z-index:200;transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);box-shadow:-8px 0 40px rgba(0,0,0,.5)}
+    #chat-panel.open{transform:translateX(0)}
+    #chat-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:199;opacity:0;pointer-events:none;transition:opacity .3s}
+    #chat-overlay.open{opacity:1;pointer-events:all}
+    .chat-header{padding:.9rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.75rem;flex-shrink:0;background:var(--elevated)}
+    .chat-header-avatar{width:40px;height:40px;border-radius:50%;border:2px solid var(--accent2);flex-shrink:0;object-fit:cover}
+    .chat-header-avatar-fb{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.95rem;color:#fff;flex-shrink:0}
+    .chat-header-info{flex:1;min-width:0}
+    .chat-header-name{font-weight:700;font-size:.9rem;color:var(--text-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .chat-header-sub{font-size:.68rem;color:var(--text-3);margin-top:.1rem}
+    .chat-close-btn{background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--text-3);padding:.3rem .6rem;cursor:pointer;font-size:.8rem;transition:all .15s;flex-shrink:0}
+    .chat-close-btn:hover{border-color:var(--accent);color:var(--accent)}
+    .chat-messages{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.65rem}
+    .chat-bubble{max-width:88%;padding:.6rem .9rem;border-radius:12px;font-size:.84rem;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+    .chat-bubble.user{align-self:flex-end;background:var(--accent);color:#fff;border-bottom-right-radius:3px}
+    .chat-bubble.assistant{align-self:flex-start;background:var(--elevated);border:1px solid var(--border);color:var(--text-1);border-bottom-left-radius:3px}
+    .chat-bubble.thinking{align-self:flex-start;background:var(--elevated);border:1px solid var(--border);color:var(--text-3);font-style:italic;font-size:.78rem;animation:pulse 1.2s ease-in-out infinite}
+    @keyframes pulse{0%,100%{opacity:.5}50%{opacity:1}}
+    .chat-input-row{padding:.75rem 1rem;border-top:1px solid var(--border);display:flex;gap:.5rem;flex-shrink:0;background:var(--elevated)}
+    .chat-input{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.55rem .8rem;color:var(--text-1);font-size:.85rem;outline:none;transition:border-color .2s;resize:none;font-family:inherit;max-height:120px}
+    .chat-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(124,58,237,.15)}
+    .chat-send-btn{padding:.55rem .9rem;border-radius:8px;border:none;cursor:pointer;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-weight:700;font-size:.82rem;transition:all .2s;flex-shrink:0}
+    .chat-send-btn:hover:not(:disabled){box-shadow:0 0 16px var(--glow)}
+    .chat-send-btn:disabled{opacity:.45;cursor:not-allowed}
+    .chat-agent-badge{display:inline-flex;align-items:center;gap:.3rem;font-size:.62rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--accent2);background:rgba(124,58,237,.12);border:1px solid rgba(124,58,237,.3);border-radius:4px;padding:1px 6px}
   </style>
 </head>
 <body>
@@ -380,6 +406,28 @@
   <div class="past-grid" id="past-grid"></div>
 </div>
 
+<!-- Chat overlay -->
+<div id="chat-overlay" onclick="closeChat()"></div>
+
+<!-- Chat panel -->
+<div id="chat-panel">
+  <div class="chat-header">
+    <div id="chat-avatar-wrap"></div>
+    <div class="chat-header-info">
+      <div class="chat-header-name" id="chat-header-name">Developer</div>
+      <div class="chat-header-sub"><span class="chat-agent-badge">⬡ Agent Mode</span> &nbsp;Ask anything about their expertise</div>
+    </div>
+    <button class="chat-close-btn" onclick="closeChat()">✕</button>
+  </div>
+  <div class="chat-messages" id="chat-messages"></div>
+  <div class="chat-input-row">
+    <textarea class="chat-input" id="chat-input" rows="1"
+      placeholder="Ask about their tech choices, architecture, debugging approach…"
+      onkeydown="chatKeydown(event)" oninput="autoResize(this)"></textarea>
+    <button class="chat-send-btn" id="chat-send-btn" onclick="sendChat()">Send ↑</button>
+  </div>
+</div>
+
 <footer style="text-align:center;padding:2rem;color:var(--text-3);font-size:.72rem;border-top:1px solid var(--border);position:relative;z-index:1">The best engineers leave traces everywhere. Sigil reads them. &nbsp;·&nbsp; © 2025 Sigil · <a href="/pitch" style="color:var(--accent);text-decoration:none">See pitch →</a></footer>
 
 <script>
@@ -411,6 +459,99 @@ function setStep(idx) {
   for (let i = 0; i < 5; i++) {
     const el = document.getElementById('step-' + i);
     el.className = 'loader-step' + (i < idx ? ' done' : i === idx ? ' active' : '');
+  }
+}
+
+// ── Chat ─────────────────────────────────────────────────────────────────────
+
+let chatHistory = [];
+let chatBusy = false;
+
+function openChat() {
+  if (!currentProfile) return;
+  const p = currentProfile;
+
+  // Avatar
+  const wrap = document.getElementById('chat-avatar-wrap');
+  const initial = (p.name || p.username || '?')[0].toUpperCase();
+  wrap.innerHTML = p.avatar_url
+    ? `<img class="chat-header-avatar" src="${p.avatar_url}" onerror="this.outerHTML='<div class=\\'chat-header-avatar-fb\\'>${initial}</div>'">`
+    : `<div class="chat-header-avatar-fb">${initial}</div>`;
+
+  document.getElementById('chat-header-name').textContent = p.name || p.username;
+
+  // Reset conversation
+  chatHistory = [];
+  const msgs = document.getElementById('chat-messages');
+  msgs.innerHTML = '';
+  appendBubble('assistant',
+    `Hey! I'm ${p.name || p.username}. Ask me anything — my approach to architecture, code reviews, debugging, tech choices. What's on your mind?`
+  );
+
+  document.getElementById('chat-panel').classList.add('open');
+  document.getElementById('chat-overlay').classList.add('open');
+  document.getElementById('chat-input').focus();
+}
+
+function closeChat() {
+  document.getElementById('chat-panel').classList.remove('open');
+  document.getElementById('chat-overlay').classList.remove('open');
+}
+
+function appendBubble(role, text) {
+  const msgs = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = `chat-bubble ${role}`;
+  div.textContent = text;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  return div;
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+function chatKeydown(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
+}
+
+async function sendChat() {
+  if (chatBusy) return;
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text || !cacheKey) return;
+
+  input.value = '';
+  input.style.height = 'auto';
+  chatBusy = true;
+  document.getElementById('chat-send-btn').disabled = true;
+
+  appendBubble('user', text);
+  chatHistory.push({ role: 'user', content: text });
+
+  const name = currentProfile.name || currentProfile.username || '…';
+  const thinkBubble = appendBubble('thinking', `${name} is thinking…`);
+
+  try {
+    const res = await fetch(`${API}/api/chat/${encodeURIComponent(cacheKey)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: chatHistory }),
+    });
+    if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.detail || `HTTP ${res.status}`); }
+    const data = await res.json();
+    thinkBubble.remove();
+    appendBubble('assistant', data.response);
+    chatHistory.push({ role: 'assistant', content: data.response });
+  } catch (err) {
+    thinkBubble.remove();
+    appendBubble('assistant', `Sorry, something went wrong: ${err.message}`);
+  } finally {
+    chatBusy = false;
+    document.getElementById('chat-send-btn').disabled = false;
+    input.focus();
   }
 }
 
@@ -511,6 +652,7 @@ function renderProfileHero(p) {
         <div class="stat"><div class="stat-val">${(p.patterns||[]).length}</div><div class="stat-lbl">Patterns</div></div>
       </div>
       <div class="profile-actions">
+        <button class="btn btn-primary" onclick="openChat()" style="background:linear-gradient(135deg,#5B21B6,#A855F7);box-shadow:0 0 18px rgba(124,58,237,.4);font-weight:700">🤖 Chat as Agent →</button>
         <button class="btn btn-primary" onclick="downloadFile('identity')">⬇ identity.md</button>
         <button class="btn btn-primary" onclick="downloadFile('soul')">⬇ soul.md</button>
         <button class="btn btn-ghost" onclick="resetForm()">New Sigil</button>
