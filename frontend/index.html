@@ -140,8 +140,8 @@
     .commits-list{margin-top:1rem;display:flex;flex-direction:column;gap:.2rem;max-height:520px;overflow-y:auto}
     .commit-row{display:grid;grid-template-columns:auto 72px 1fr auto;align-items:center;gap:.7rem;padding:.4rem .6rem;border-radius:8px;transition:background .15s}
     .commit-row:hover{background:rgba(124,58,237,.08)}
-    .commit-sha{font-family:monospace;font-size:.73rem;color:var(--accent2);flex-shrink:0;text-decoration:none;font-weight:600;letter-spacing:.3px;border:1px solid rgba(124,58,237,.25);border-radius:4px;padding:1px 5px;background:rgba(124,58,237,.07)}
-    .commit-sha:hover{background:rgba(124,58,237,.18);border-color:rgba(124,58,237,.5)}
+    .commit-sha{font-family:monospace;font-size:.73rem;color:var(--accent2);flex-shrink:0;text-decoration:none;font-weight:600;letter-spacing:.3px;border:1px solid rgba(124,58,237,.35);border-radius:4px;padding:2px 6px;background:rgba(124,58,237,.1);transition:all .15s;white-space:nowrap}
+    .commit-sha:hover{background:rgba(124,58,237,.25);border-color:rgba(168,85,247,.7);color:#c084fc;text-decoration:underline;text-underline-offset:2px}
     .commit-date{font-size:.69rem;color:var(--text-3);flex-shrink:0}
     .commit-msg{font-size:.78rem;color:var(--text-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     .commit-files{font-size:.66rem;color:var(--text-3);text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px}
@@ -386,6 +386,8 @@
 const API = 'http://localhost:8003';
 let currentProfile = null;
 let cacheKey = null;
+let lastRepo = null;
+let lastUsername = null;
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -449,6 +451,8 @@ async function runAnalysis() {
     const data = await res.json();
     currentProfile = data.profile;
     cacheKey = data.cache_key;
+    lastRepo = repo;
+    lastUsername = username;
     setStep(5);
 
     await new Promise(r => setTimeout(r, 400));
@@ -671,8 +675,22 @@ function renderFeatureAreas(p) {
 function renderCommitsAnalyzed(p) {
   const commits = p.commits_analyzed || [];
   const section = document.getElementById('commits-section');
-  if (!commits.length) { section.style.display = 'none'; return; }
   section.style.display = 'block';
+
+  if (!commits.length) {
+    // Profile cached before commits_analyzed was added — show refresh prompt
+    document.getElementById('commits-count').textContent = '';
+    document.getElementById('commits-list').innerHTML = `
+      <div style="padding:1.2rem;text-align:center;color:var(--text-3);font-size:.82rem;border:1px dashed rgba(124,58,237,.25);border-radius:10px;margin-top:.5rem">
+        <div style="margin-bottom:.5rem;font-size:1rem;">🔗</div>
+        This profile was cached before commit links were added.<br>
+        <button onclick="forceRefresh()" style="margin-top:.75rem;background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.4);color:var(--accent2);border-radius:6px;padding:.35rem .9rem;cursor:pointer;font-size:.78rem;">
+          ↺ Refresh to load commit links
+        </button>
+      </div>`;
+    return;
+  }
+
   document.getElementById('commits-count').textContent = `${commits.length} commits`;
 
   document.getElementById('commits-list').innerHTML = commits.map((c, i) => {
@@ -683,14 +701,36 @@ function renderCommitsAnalyzed(p) {
     const filesHtml = files.length
       ? `<span class="commit-files" title="${files.join('\n')}">${filePills}</span>`
       : '<span></span>';
+    const sha7 = (c.sha || '').slice(0, 7);
     return `
     <div class="commit-row" style="${i % 2 === 0 ? '' : 'background:rgba(255,255,255,.018)'}">
-      <a class="commit-sha" href="${c.url}" target="_blank" rel="noopener" title="Open commit on GitHub">${c.sha.slice(0,7)}</a>
+      <a class="commit-sha" href="${c.url}" target="_blank" rel="noopener" title="Open on GitHub / ADO ↗">${sha7} <sup style="font-size:.55rem;opacity:.7">↗</sup></a>
       <span class="commit-date">${c.date}</span>
       <span class="commit-msg" title="${(c.message||'').replace(/"/g,'&quot;')}">${c.message || ''}</span>
       ${filesHtml}
     </div>`;
   }).join('');
+}
+
+function forceRefresh() {
+  const repo = lastRepo || document.getElementById('repo-input').value.trim();
+  const username = lastUsername || document.getElementById('username-input').value.trim();
+  if (!repo || !username) { runAnalysis(); return; }
+  document.getElementById('repo-input').value = repo;
+  document.getElementById('username-input').value = username;
+  // Patch runAnalysis to send force_refresh:true for this one call
+  const origAnalyze = window._origAnalyze;
+  fetch(`${API}/api/analyze`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ repo, username, force_refresh: true }),
+  }).then(r => r.json()).then(data => {
+    currentProfile = data.profile;
+    cacheKey = data.cache_key;
+    lastRepo = repo;
+    lastUsername = username;
+    renderResults(currentProfile);
+  }).catch(e => showError(e.message));
 }
 
 function openCommits() {
