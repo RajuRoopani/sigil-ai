@@ -1,28 +1,28 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 200" width="900" height="200">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="900" y2="200" gradientUnits="userSpaceOnUse">
-      <stop offset="0%"   stop-color="#06090F"/>
-      <stop offset="50%"  stop-color="#080C14"/>
-      <stop offset="100%" stop-color="#050810"/>
+      <stop offset="0%"   stop-color="#0B0C14"/>
+      <stop offset="50%"  stop-color="#0F1117"/>
+      <stop offset="100%" stop-color="#0B0C14"/>
     </linearGradient>
-    <linearGradient id="ring-g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%"   stop-color="#06B6D4"/>
-      <stop offset="100%" stop-color="#6366F1"/>
+    <linearGradient id="hex-g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%"   stop-color="#6366F1"/>
+      <stop offset="100%" stop-color="#8B5CF6"/>
     </linearGradient>
     <linearGradient id="wordmark" x1="0" y1="0" x2="1" y2="0">
       <stop offset="0%"   stop-color="#F8FAFC"/>
       <stop offset="100%" stop-color="#CBD5E1"/>
     </linearGradient>
     <linearGradient id="tag-g" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%"   stop-color="#06B6D4"/>
-      <stop offset="100%" stop-color="#6366F1"/>
+      <stop offset="0%"   stop-color="#6366F1"/>
+      <stop offset="100%" stop-color="#8B5CF6"/>
     </linearGradient>
     <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feGaussianBlur stdDeviation="4" result="blur"/>
       <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
     <filter id="textglow" x="-10%" y="-30%" width="120%" height="160%">
-      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feGaussianBlur stdDeviation="7" result="blur"/>
       <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
   </defs>
@@ -31,7 +31,7 @@
   <rect width="900" height="200" rx="16" fill="url(#bg)"/>
 
   <!-- Subtle grid -->
-  <g opacity="0.03" stroke="#06B6D4" stroke-width="0.8">
+  <g opacity="0.035" stroke="#8B5CF6" stroke-width="0.8">
     <line x1="0"   y1="50"  x2="900" y2="50"/>
     <line x1="0"   y1="100" x2="900" y2="100"/>
     <line x1="0"   y1="150" x2="900" y2="150"/>
@@ -40,45 +40,50 @@
     <line x1="700" y1="0"   x2="700" y2="200"/>
   </g>
 
-  <!-- Left ambient glow -->
-  <ellipse cx="100" cy="100" rx="100" ry="75" fill="#06B6D4" opacity="0.04"/>
-  <ellipse cx="100" cy="100" rx="55"  ry="40" fill="#6366F1" opacity="0.05"/>
-  <!-- Right ambient -->
-  <ellipse cx="800" cy="100" rx="80" ry="60" fill="#6366F1" opacity="0.04"/>
+  <!-- Ambient glows -->
+  <ellipse cx="110" cy="100" rx="100" ry="75" fill="#6366F1" opacity="0.06"/>
+  <ellipse cx="800" cy="100" rx="80"  ry="60" fill="#8B5CF6" opacity="0.05"/>
 
   <!-- Border -->
-  <rect width="900" height="200" rx="16" fill="none" stroke="#06B6D4" stroke-width="1" opacity="0.2"/>
+  <rect width="900" height="200" rx="16" fill="none" stroke="#6366F1" stroke-width="1" opacity="0.25"/>
 
-  <!-- ── Signal Ring Icon (centered at x=92, y=100) ── -->
-  <g transform="translate(24, 30)" filter="url(#glow)">
-    <!-- Outer ring -->
-    <circle cx="68" cy="70" r="56" fill="none" stroke="url(#ring-g)" stroke-width="1.5" opacity="0.5"/>
-    <!-- Mid ring -->
-    <circle cx="68" cy="70" r="40" fill="none" stroke="url(#ring-g)" stroke-width="1.2" opacity="0.35"/>
-    <!-- Inner ring -->
-    <circle cx="68" cy="70" r="22" fill="none" stroke="url(#ring-g)" stroke-width="2" opacity="0.85"/>
-    <!-- Center dot -->
-    <circle cx="68" cy="70" r="8"  fill="#06B6D4" opacity="0.95"/>
-    <circle cx="68" cy="70" r="3"  fill="white"   opacity="0.9"/>
-    <!-- Radar arcs — top-right -->
-    <path d="M 82 56 A 20 20 0 0 1 82 84" fill="none" stroke="#06B6D4" stroke-width="3"   stroke-linecap="round" opacity="0.75"/>
-    <path d="M 92 46 A 34 34 0 0 1 92 94" fill="none" stroke="#6366F1" stroke-width="2"   stroke-linecap="round" opacity="0.45"/>
+  <!-- ── Hexagon icon (centered at x=96, y=100) ── -->
+  <g transform="translate(24, 22)" filter="url(#glow)">
+    <!-- Outer hex -->
+    <polygon
+      points="72,6 118,32 118,84 72,110 26,84 26,32"
+      fill="none"
+      stroke="url(#hex-g)"
+      stroke-width="2"/>
+    <!-- Inner hex (tinted fill) -->
+    <polygon
+      points="72,28 100,44 100,76 72,92 44,76 44,44"
+      fill="url(#hex-g)"
+      opacity="0.1"/>
+    <!-- Git node cluster: center + 2 branch nodes + connectors -->
+    <circle cx="72" cy="58" r="7"  fill="url(#hex-g)"/>
+    <circle cx="54" cy="47" r="4"  fill="#8B5CF6" opacity="0.75"/>
+    <circle cx="90" cy="47" r="4"  fill="#8B5CF6" opacity="0.75"/>
+    <line x1="59" y1="50" x2="66" y2="55" stroke="#8B5CF6" stroke-width="1.8" opacity="0.65"/>
+    <line x1="85" y1="50" x2="78" y2="55" stroke="#8B5CF6" stroke-width="1.8" opacity="0.65"/>
+    <!-- Center highlight -->
+    <circle cx="72" cy="58" r="2.5" fill="white" opacity="0.85"/>
   </g>
 
   <!-- ── Wordmark ── -->
   <text
-    x="178" y="115"
+    x="182" y="116"
     font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif"
-    font-weight="300"
-    font-size="74"
-    letter-spacing="8"
+    font-weight="600"
+    font-size="70"
+    letter-spacing="-1"
     fill="url(#wordmark)"
     filter="url(#textglow)">SIGIL</text>
 
-  <!-- Thin vertical separator -->
-  <line x1="448" y1="52" x2="448" y2="148" stroke="#06B6D4" stroke-width="1" opacity="0.3"/>
+  <!-- Thin separator -->
+  <line x1="448" y1="52" x2="448" y2="148" stroke="#6366F1" stroke-width="1" opacity="0.3"/>
 
-  <!-- Right side taglines -->
+  <!-- Right taglines -->
   <text
     x="472" y="90"
     font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif"
@@ -97,5 +102,5 @@
     font-style="italic">The best engineers leave traces everywhere. Sigil reads them.</text>
 
   <!-- Bottom accent bar -->
-  <rect x="178" y="138" width="90" height="2" rx="1" fill="url(#tag-g)" opacity="0.5"/>
+  <rect x="182" y="138" width="80" height="2" rx="1" fill="url(#tag-g)" opacity="0.5"/>
 </svg>
