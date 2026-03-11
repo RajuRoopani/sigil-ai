@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 120" width="480" height="120">
+  <defs>
+    <linearGradient id="node-grad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#A78BFA"/>
+      <stop offset="100%" stop-color="#7C3AED"/>
+    </linearGradient>
+    <linearGradient id="word-c" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#E2E8F0"/>
+    </linearGradient>
+    <linearGradient id="accent-c" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#A78BFA"/>
+      <stop offset="100%" stop-color="#C084FC"/>
+    </linearGradient>
+    <filter id="glow-c">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Dark neutral background — works at Microsoft enterprise level -->
+  <rect width="480" height="120" rx="0" fill="#0D1117"/>
+
+  <!-- Commit graph / node map icon -->
+  <g transform="translate(18, 10)" filter="url(#glow-c)">
+    <!-- Trunk line -->
+    <line x1="48" y1="14" x2="48" y2="86" stroke="#4B5563" stroke-width="2"/>
+
+    <!-- Branch lines -->
+    <line x1="48" y1="34" x2="72" y2="22" stroke="#6D28D9" stroke-width="1.5" stroke-dasharray="2 2" opacity="0.6"/>
+    <line x1="48" y1="54" x2="24" y2="66" stroke="#6D28D9" stroke-width="1.5" stroke-dasharray="2 2" opacity="0.6"/>
+    <line x1="48" y1="54" x2="72" y2="66" stroke="#6D28D9" stroke-width="1.5" stroke-dasharray="2 2" opacity="0.5"/>
+
+    <!-- Commit nodes on trunk -->
+    <circle cx="48" cy="24" r="5.5" fill="#1E1E2E" stroke="url(#node-grad)" stroke-width="2"/>
+    <circle cx="48" cy="50" r="8" fill="url(#node-grad)"/>
+    <circle cx="48" cy="76" r="5.5" fill="#1E1E2E" stroke="#6366F1" stroke-width="2"/>
+
+    <!-- Branch nodes -->
+    <circle cx="72" cy="22" r="4" fill="#A78BFA" opacity="0.7"/>
+    <circle cx="24" cy="66" r="4" fill="#A78BFA" opacity="0.6"/>
+    <circle cx="72" cy="66" r="4" fill="#A78BFA" opacity="0.5"/>
+
+    <!-- Center star burst on main node -->
+    <circle cx="48" cy="50" r="3" fill="white" opacity="0.9"/>
+  </g>
+
+  <!-- Wordmark — heavier weight, more enterprise -->
+  <text
+    x="122" y="65"
+    font-family="'Segoe UI', -apple-system, system-ui, sans-serif"
+    font-weight="700"
+    font-size="40"
+    letter-spacing="-1"
+    fill="url(#word-c)">SIGIL</text>
+
+  <!-- Accent dot between wordmark and sub -->
+  <circle cx="247" cy="75" r="2" fill="url(#accent-c)" opacity="0.7"/>
+
+  <!-- Tagline — all caps, spaced, muted -->
+  <text
+    x="122" y="89"
+    font-family="'Segoe UI', -apple-system, system-ui, sans-serif"
+    font-weight="400"
+    font-size="12"
+    letter-spacing="3"
+    fill="url(#accent-c)"
+    opacity="0.8">DEVELOPER KNOWLEDGE GRAPH</text>
+</svg>
