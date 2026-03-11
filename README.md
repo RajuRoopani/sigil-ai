@@ -35,8 +35,8 @@ Point Sigil at any GitHub or Azure DevOps repository and a developer's username.
 <table>
 <tr>
 <td width="50%">
-<img src="screenshots/profile-hero.png" width="100%"/>
-<br/><sub><b>Developer Profile Hero</b> — name, headline, superpower, and core tags extracted by Claude from raw commit evidence</sub>
+<img src="screenshots/home-new.png" width="100%"/>
+<br/><sub><b>Home — Forge a Sigil</b> — enter any repo URL and developer username; cached profiles surface instantly in "Previously Forged Sigils"</sub>
 </td>
 <td width="50%">
 <img src="screenshots/mindmap.png" width="100%"/>
@@ -59,8 +59,18 @@ Point Sigil at any GitHub or Azure DevOps repository and a developer's username.
 <br/><sub><b>Engineering Patterns</b> — characteristic behaviors extracted from thousands of lines of diff: how they refactor, what they defer, what they test first</sub>
 </td>
 <td width="50%">
-<img src="screenshots/commits.png" width="100%"/>
-<br/><sub><b>Commits Analyzed</b> — every commit with a clickable SHA link back to GitHub, showing exactly what evidence fed the profile</sub>
+<img src="screenshots/commits-sha.png" width="100%"/>
+<br/><sub><b>Commits with SHA Links</b> — every analyzed commit has a clickable link back to GitHub or ADO for cross-verification — the raw evidence that built the profile</sub>
+</td>
+</tr>
+<tr>
+<td width="50%">
+<img src="screenshots/agent-button.png" width="100%"/>
+<br/><sub><b>Turn into Agent</b> — one click converts any profile into a live AI conversation using <code>identity.md</code> + <code>soul.md</code> as the system prompt</sub>
+</td>
+<td width="50%">
+<img src="screenshots/agent-chat.png" width="100%"/>
+<br/><sub><b>Agent Chat</b> — Claude responds <i>as</i> the developer: their vocabulary, opinions, architectural instincts, and domain expertise, across multi-turn conversation</sub>
 </td>
 </tr>
 <tr>
@@ -74,6 +84,19 @@ Point Sigil at any GitHub or Azure DevOps repository and a developer's username.
 </td>
 </tr>
 </table>
+
+---
+
+## ⬡ Turn into Agent — Chat with the Developer
+
+Every profile can be converted into a live AI agent that responds **as that developer** — in their voice, with their domain expertise, using their engineering philosophy.
+
+<div align="center">
+<img src="screenshots/agent-chat.png" width="85%"/>
+<br/><sub><i>"Chat as Agent →" opens a slide-in panel. Claude becomes that developer — their opinions, their depth, their instincts.</i></sub>
+</div>
+
+After analysis, click **🤖 Chat as Agent →** in the profile action bar. A slide-in panel opens and Claude loads the developer's `identity.md` and `soul.md` as its system prompt. Ask it to review code. Ask why they made a particular design decision. Ask how they'd approach a refactor of the system they built. The agent doesn't just know facts about that developer — it *reasons like them*. Multi-turn conversation maintains full context across the session.
 
 ---
 
@@ -225,6 +248,7 @@ Interactive docs at `http://localhost:8003/docs`.
 | `DELETE` | `/api/profiles/{cache_key}` | Delete a profile from cache and disk. |
 | `GET` | `/api/export/{cache_key}/identity.md` | Download `identity.md` as a file attachment. |
 | `GET` | `/api/export/{cache_key}/soul.md` | Download `soul.md` as a file attachment. |
+| `POST` | `/api/chat/{cache_key}` | Multi-turn chat with a developer agent. Body: `{ messages: [{role, content}] }`. Claude responds as that developer using `identity.md` + `soul.md`. |
 | `GET` | `/health` | Returns model config, token status, and count of cached profiles. |
 
 **Example — analyze a developer:**
@@ -234,11 +258,24 @@ curl -X POST http://localhost:8003/api/analyze \
   -d '{"repo": "vercel/next.js", "username": "timneutkens"}'
 ```
 
-**Example — ADO repo:**
+**Example — ADO repos** (all formats accepted):
 ```bash
+# Legacy visualstudio.com format
 curl -X POST http://localhost:8003/api/analyze \
   -H "Content-Type: application/json" \
   -d '{"repo": "https://myorg.visualstudio.com/MyProject/_git/my-repo", "username": "alice@company.com"}'
+
+# New dev.azure.com format
+curl -X POST http://localhost:8003/api/analyze \
+  -H "Content-Type: application/json" \
+  -d '{"repo": "https://dev.azure.com/myorg/MyProject/_git/my-repo", "username": "alice@company.com"}'
+```
+
+**Example — chat with a developer agent:**
+```bash
+curl -X POST "http://localhost:8003/api/chat/vercel%2Fnext.js%3A%3Atimneutkens" \
+  -H "Content-Type: application/json" \
+  -d '{"messages": [{"role": "user", "content": "How would you approach reducing cold-start time?"}]}'
 ```
 
 ---
@@ -285,6 +322,9 @@ New hires spend their first three months learning unwritten conventions: why the
 **AI-Augmented Code Review**
 Wire `soul.md` into a Claude Code agent scoped to PR review. When a PR touches the payment service, route it to the agent built from your payments lead's profile. The reviewer doesn't just check syntax — it catches the same architectural drift, the same missing edge cases, the same naming violations that the real engineer would flag. At zero marginal cost per review.
 
+**Interactive Knowledge Retrieval**
+Instead of searching wiki pages or asking a colleague who might not remember, open a chat with the developer's agent. Ask it "why is the auth middleware structured this way?" or "how would you refactor this service for multi-tenancy?" The agent draws on the same commit evidence that built the profile — it knows what they built, when they built it, and how they reasoned about it. Institutional memory, queryable in real time.
+
 **Talent Intelligence and Skills Mapping**
 Engineering leaders rarely have accurate visibility into what their teams actually know vs. what their resumes claim. Run Sigil across your entire org. The resulting skill trees — grounded in real commit evidence, not self-reported — give you an honest map of capability: who owns what, where you have bus-factor risk, which engineers are quietly growing into new domains, and where critical knowledge is dangerously concentrated in one person.
 
@@ -307,24 +347,24 @@ Engineering leaders rarely have accurate visibility into what their teams actual
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                         Browser (D3.js UI)                          │
-│           Profile cards · Skill Sigil viz · Export buttons          │
-└───────────────────────────────┬─────────────────────────────────────┘
-                                │ HTTP
-┌───────────────────────────────▼─────────────────────────────────────┐
+│     Profile cards · Skill Sigil viz · Export · 🤖 Agent Chat        │
+└──────────────────┬──────────────────────────┬───────────────────────┘
+                   │ /api/analyze             │ /api/chat/{key}
+┌──────────────────▼──────────────────────────▼───────────────────────┐
 │                       FastAPI Backend (:8003)                       │
 │                                                                     │
-│   /api/analyze ──► analyzer.py                                      │
-│                         │                                           │
-│              ┌──────────┼──────────┐                                │
-│              ▼          ▼          ▼                                │
-│       github_client  ado_client  config                             │
-│       (httpx)        (httpx)     (pydantic-settings)               │
+│   /api/analyze ──► analyzer.py      /api/chat ──► identity.md       │
+│                         │                         soul.md           │
+│              ┌──────────┼──────────┐                   │            │
+│              ▼          ▼          ▼                   ▼            │
+│       github_client  ado_client  config     Anthropic Claude API    │
+│       (httpx)        (httpx)                (persona system prompt) │
 │              │          │                                           │
 │              └────┬─────┘                                           │
 │                   │ commits · diffs · PRs · comment threads ·       │
 │                   │ work items · repo tree · key files              │
 │                   ▼                                                 │
-│           Anthropic Claude API  (claude-sonnet-4-6)                │
+│           Anthropic Claude API  (claude-sonnet-4-6, max 8192 tok)  │
 │                   │                                                 │
 │                   │ profile.json · identity.md · soul.md            │
 │                   ▼                                                 │
