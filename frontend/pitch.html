@@ -1493,10 +1493,10 @@ html, body {
 
 <!-- ── Navigation ── -->
 <div id="nav">
-  <button class="nav-btn" id="prev-btn" onclick="goTo(cur-1)">←</button>
+  <button class="nav-btn" id="prev-btn">←</button>
   <div id="dots"></div>
   <span id="slide-counter">1 / 10</span>
-  <button class="nav-btn" id="next-btn" onclick="goTo(cur+1)">→</button>
+  <button class="nav-btn" id="next-btn">→</button>
 </div>
 
 <script>
@@ -1532,6 +1532,10 @@ html, body {
       slides[cur].classList.add('is-active');
     }, 100);
   }
+
+  // Button nav
+  document.getElementById('prev-btn').addEventListener('click', ()=>goTo(cur-1));
+  document.getElementById('next-btn').addEventListener('click', ()=>goTo(cur+1));
 
   // Keyboard nav
   document.addEventListener('keydown', e=>{
