@@ -1,0 +1,1683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sigil.ai — Investor Pitch Deck</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #04040A;
+    --surface: #09091A;
+    --surface2: #0E0E24;
+    --accent: #7C3AED;
+    --accent2: #A855F7;
+    --accent3: #C084FC;
+    --text: #F8F8FF;
+    --text-muted: #8B8BA8;
+    --text-dim: #4A4A6A;
+    --red: #EF4444;
+    --red-dim: rgba(239,68,68,0.12);
+    --border: rgba(124,58,237,0.2);
+    --border-light: rgba(255,255,255,0.06);
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    background: var(--bg);
+    font-family: 'Inter', sans-serif;
+    color: var(--text);
+  }
+
+  /* ── Progress bar ── */
+  #progress-bar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    transition: width 0.4s ease;
+    z-index: 100;
+    box-shadow: 0 0 10px var(--accent2);
+  }
+
+  /* ── Slide container ── */
+  #deck {
+    width: 100%; height: 100vh;
+    display: flex;
+    transition: transform 0.55s cubic-bezier(0.77, 0, 0.175, 1);
+    will-change: transform;
+  }
+
+  .slide {
+    min-width: 100vw;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 80px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* ── Watermark ── */
+  .slide::after {
+    content: "◈";
+    position: absolute;
+    bottom: 28px;
+    right: 36px;
+    font-size: 2rem;
+    color: rgba(124,58,237,0.07);
+    pointer-events: none;
+    user-select: none;
+  }
+
+  /* ── Navigation ── */
+  #nav {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    z-index: 100;
+    background: rgba(9,9,26,0.85);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    padding: 10px 22px;
+  }
+
+  .nav-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .nav-btn:hover { background: var(--accent); border-color: var(--accent); color: white; }
+  .nav-btn:disabled { opacity: 0.3; cursor: default; }
+
+  #slide-counter {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+    min-width: 50px;
+    text-align: center;
+  }
+
+  #dots {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.25s;
+  }
+  .dot.active {
+    background: var(--accent2);
+    box-shadow: 0 0 6px var(--accent2);
+    width: 18px;
+    border-radius: 3px;
+  }
+
+  /* ══════════════════════════════════
+     SHARED TYPOGRAPHY
+  ══════════════════════════════════ */
+  .slide-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: 16px;
+  }
+
+  .slide-title {
+    font-size: 2.6rem;
+    font-weight: 800;
+    line-height: 1.15;
+    text-align: center;
+    margin-bottom: 48px;
+    max-width: 900px;
+  }
+
+  .slide-title span { color: var(--accent2); }
+
+  .accent-line {
+    width: 60px; height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 2px;
+    margin: 0 auto 40px;
+  }
+
+  /* ══════════════════════════════════
+     SLIDE 1 — TITLE
+  ══════════════════════════════════ */
+  #slide-1 {
+    background: radial-gradient(ellipse 80% 60% at 50% 40%, rgba(124,58,237,0.15) 0%, transparent 70%), var(--bg);
+  }
+
+  /* Particle background */
+  .particles {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .particle {
+    position: absolute;
+    border-radius: 50%;
+    background: var(--accent2);
+    animation: float-particle linear infinite;
+    opacity: 0;
+  }
+
+  @keyframes float-particle {
+    0%   { transform: translateY(100vh) scale(0); opacity: 0; }
+    10%  { opacity: 0.6; }
+    90%  { opacity: 0.3; }
+    100% { transform: translateY(-20vh) scale(1); opacity: 0; }
+  }
+
+  .title-logo { margin-bottom: 28px; }
+
+  .title-name {
+    font-size: 5rem;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    color: white;
+    line-height: 1;
+    margin-bottom: 16px;
+  }
+
+  .title-tagline {
+    font-size: 1.35rem;
+    font-weight: 500;
+    color: var(--accent2);
+    margin-bottom: 12px;
+    text-align: center;
+  }
+
+  .title-sub {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    font-weight: 400;
+    margin-bottom: 40px;
+    letter-spacing: 0.05em;
+  }
+
+  .title-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 20px;
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+  }
+  .title-badge span { color: var(--accent2); }
+
+  /* ══════════════════════════════════
+     SLIDE 2 — PROBLEM
+  ══════════════════════════════════ */
+  #slide-2 { background: var(--bg); }
+
+  .stat-cards {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 40px;
+    width: 100%;
+    max-width: 900px;
+  }
+
+  .stat-card {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid rgba(239,68,68,0.2);
+    border-radius: 16px;
+    padding: 32px 24px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--red), #F97316);
+  }
+
+  .stat-num {
+    font-size: 3.2rem;
+    font-weight: 900;
+    color: var(--red);
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .stat-desc {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .stat-source {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    margin-top: 10px;
+  }
+
+  .problem-insight {
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    text-align: center;
+    max-width: 620px;
+    line-height: 1.6;
+    border-left: 3px solid var(--red);
+    padding-left: 20px;
+    text-align: left;
+  }
+
+  .problem-insight strong { color: white; }
+
+  /* ══════════════════════════════════
+     SLIDE 3 — INSIGHT
+  ══════════════════════════════════ */
+  #slide-3 { background: var(--bg); }
+
+  .insight-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    max-width: 800px;
+    width: 100%;
+    margin-bottom: 40px;
+  }
+
+  .insight-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px;
+    transition: border-color 0.3s;
+  }
+  .insight-box:hover { border-color: var(--accent2); }
+
+  .insight-icon {
+    font-size: 1.8rem;
+    margin-bottom: 12px;
+    display: block;
+  }
+
+  .insight-text {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.4;
+  }
+
+  .insight-footer {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    text-align: center;
+    max-width: 700px;
+    line-height: 1.65;
+  }
+  .insight-footer strong { color: var(--accent2); }
+
+  /* ══════════════════════════════════
+     SLIDE 4 — SOLUTION
+  ══════════════════════════════════ */
+  #slide-4 { background: var(--bg); }
+
+  .flow-steps {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    max-width: 920px;
+    width: 100%;
+    margin-bottom: 20px;
+  }
+
+  .flow-step {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px 24px;
+    text-align: center;
+    position: relative;
+  }
+
+  .flow-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    flex-shrink: 0;
+    color: var(--accent2);
+    font-size: 1.4rem;
+  }
+
+  .step-num {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: 10px;
+  }
+
+  .step-icon {
+    font-size: 2.2rem;
+    margin-bottom: 10px;
+  }
+
+  .step-title {
+    font-size: 1.3rem;
+    font-weight: 800;
+    margin-bottom: 10px;
+    color: white;
+  }
+
+  .step-desc {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    line-height: 1.55;
+  }
+
+  .flow-connector {
+    width: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .flow-connector::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+  .flow-connector-arrow {
+    width: 10px; height: 10px;
+    border-top: 2px solid var(--accent2);
+    border-right: 2px solid var(--accent2);
+    transform: rotate(45deg);
+    position: relative;
+    z-index: 1;
+    background: var(--bg);
+    margin-left: auto;
+    margin-right: 4px;
+  }
+
+  /* ══════════════════════════════════
+     SLIDE 5 — WHAT SIGIL SEES
+  ══════════════════════════════════ */
+  #slide-5 { background: var(--bg); }
+
+  .sees-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    max-width: 900px;
+    width: 100%;
+    align-items: center;
+  }
+
+  .signals-list { display: flex; flex-direction: column; gap: 14px; }
+
+  .signal-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 18px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .signal-item:hover { border-color: var(--accent2); color: var(--text); }
+
+  .signal-icon {
+    font-size: 1rem;
+    width: 28px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  /* Decorative mind map */
+  .mind-map {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    height: 300px;
+  }
+
+  .mm-center {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.6rem;
+    z-index: 2;
+    position: relative;
+    box-shadow: 0 0 30px rgba(124,58,237,0.5);
+  }
+
+  .mm-orbit {
+    position: absolute;
+    inset: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .mm-node {
+    position: absolute;
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: 2px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+    animation: mm-pulse 3s ease-in-out infinite;
+  }
+
+  @keyframes mm-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(124,58,237,0); }
+    50%       { box-shadow: 0 0 0 6px rgba(124,58,237,0.15); }
+  }
+
+  .mm-line {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 100px;
+    height: 1px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+    transform-origin: 0 0;
+  }
+
+  .sees-badge {
+    font-size: 0.78rem;
+    color: var(--accent2);
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    margin-top: 20px;
+    text-align: center;
+  }
+
+  /* ══════════════════════════════════
+     SLIDE 6 — THE OUTPUT
+  ══════════════════════════════════ */
+  #slide-6 { background: var(--bg); }
+
+  .output-cards {
+    display: flex;
+    gap: 24px;
+    max-width: 960px;
+    width: 100%;
+    margin-bottom: 36px;
+  }
+
+  .output-card {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px 24px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .output-card:hover { transform: translateY(-4px); border-color: var(--accent2); }
+
+  .output-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+
+  .output-filename {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--accent2);
+    font-family: 'Courier New', monospace;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .output-filename::before {
+    content: '{}';
+    font-size: 0.9em;
+    color: var(--text-dim);
+  }
+
+  .output-card-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 10px;
+  }
+
+  .output-card-desc {
+    font-size: 0.83rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  .output-footer {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 18px 28px;
+    background: rgba(124,58,237,0.08);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    max-width: 560px;
+  }
+  .output-footer strong { color: var(--text); }
+
+  /* ══════════════════════════════════
+     SLIDE 7 — USE CASES
+  ══════════════════════════════════ */
+  #slide-7 { background: var(--bg); }
+
+  .usecase-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    max-width: 880px;
+    width: 100%;
+  }
+
+  .usecase-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 30px;
+    transition: all 0.2s;
+    cursor: default;
+  }
+  .usecase-card:hover { border-color: var(--accent2); background: var(--surface2); }
+
+  .usecase-emoji { font-size: 2rem; margin-bottom: 12px; display: block; }
+
+  .usecase-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 8px;
+  }
+
+  .usecase-desc {
+    font-size: 0.83rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+  .usecase-desc strong { color: var(--accent2); }
+
+  /* ══════════════════════════════════
+     SLIDE 8 — MARKET
+  ══════════════════════════════════ */
+  #slide-8 { background: var(--bg); }
+
+  .market-circles {
+    display: flex;
+    gap: 0;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 40px;
+    position: relative;
+  }
+
+  .market-circle {
+    width: 240px; height: 240px;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+    position: relative;
+    transition: transform 0.2s;
+  }
+  .market-circle:hover { transform: scale(1.05); }
+
+  .mc-1 {
+    background: rgba(59,130,246,0.1);
+    border: 2px solid rgba(59,130,246,0.3);
+    margin-right: -40px;
+    z-index: 1;
+  }
+  .mc-2 {
+    background: rgba(124,58,237,0.2);
+    border: 2px solid var(--accent);
+    z-index: 3;
+    width: 260px; height: 260px;
+    box-shadow: 0 0 40px rgba(124,58,237,0.3);
+  }
+  .mc-3 {
+    background: rgba(16,185,129,0.1);
+    border: 2px solid rgba(16,185,129,0.3);
+    margin-left: -40px;
+    z-index: 1;
+  }
+
+  .mc-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  .mc-2 .mc-label { color: var(--accent3); }
+
+  .mc-tam {
+    font-size: 2rem;
+    font-weight: 900;
+    color: white;
+    margin-bottom: 4px;
+  }
+  .mc-2 .mc-tam { font-size: 2.4rem; color: var(--accent2); }
+
+  .mc-desc {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+  }
+
+  .market-sam {
+    font-size: 1rem;
+    color: var(--text-muted);
+    text-align: center;
+  }
+  .market-sam strong { font-size: 1.4rem; color: var(--accent2); }
+
+  .market-sources {
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    text-align: center;
+    margin-top: 12px;
+  }
+
+  /* ══════════════════════════════════
+     SLIDE 9 — BUSINESS MODEL
+  ══════════════════════════════════ */
+  #slide-9 { background: var(--bg); }
+
+  .pricing-cards {
+    display: flex;
+    gap: 20px;
+    max-width: 900px;
+    width: 100%;
+    margin-bottom: 32px;
+  }
+
+  .pricing-card {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 22px;
+    position: relative;
+    transition: all 0.2s;
+  }
+  .pricing-card:hover { transform: translateY(-4px); }
+  .pricing-card.featured {
+    border-color: var(--accent);
+    background: linear-gradient(135deg, rgba(124,58,237,0.1), var(--surface));
+    box-shadow: 0 0 30px rgba(124,58,237,0.2);
+  }
+
+  .pricing-badge {
+    position: absolute;
+    top: -12px; left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    padding: 4px 14px;
+    border-radius: 50px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: white;
+  }
+
+  .pricing-tier {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+
+  .pricing-price {
+    font-size: 2.2rem;
+    font-weight: 900;
+    color: white;
+    margin-bottom: 4px;
+  }
+  .pricing-price sub {
+    font-size: 0.8rem;
+    font-weight: 400;
+    color: var(--text-muted);
+  }
+
+  .pricing-features {
+    list-style: none;
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .pricing-features li {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .pricing-features li::before {
+    content: '✓';
+    color: var(--accent2);
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .nrr-note {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    text-align: center;
+    max-width: 600px;
+    line-height: 1.6;
+    padding: 16px 24px;
+    background: rgba(124,58,237,0.06);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+  .nrr-note strong { color: var(--accent2); }
+
+  /* ══════════════════════════════════
+     SLIDE 10 — TRACTION
+  ══════════════════════════════════ */
+  #slide-10 { background: var(--bg); }
+
+  .traction-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+    max-width: 880px;
+    width: 100%;
+    margin-bottom: 36px;
+  }
+
+  .traction-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 26px 18px;
+    text-align: center;
+    transition: all 0.2s;
+  }
+  .traction-box:hover { border-color: var(--accent2); }
+
+  .traction-metric {
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: var(--accent2);
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .traction-label {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+  }
+
+  .traction-quote {
+    max-width: 680px;
+    text-align: center;
+    padding: 24px 32px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    border-left: 4px solid var(--accent2);
+    margin-bottom: 16px;
+  }
+
+  .traction-quote p {
+    font-size: 0.95rem;
+    color: var(--text);
+    line-height: 1.65;
+    font-style: italic;
+    margin-bottom: 10px;
+  }
+
+  .traction-quote cite {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    font-style: normal;
+  }
+
+  .traction-note {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    text-align: center;
+  }
+
+  /* ══════════════════════════════════
+     SLIDE 11 — WHY NOW
+  ══════════════════════════════════ */
+  #slide-11 { background: var(--bg); }
+
+  .why-now-list {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 820px;
+    width: 100%;
+  }
+
+  .why-item {
+    display: flex;
+    gap: 28px;
+    align-items: flex-start;
+    padding: 28px 32px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    transition: border-color 0.2s;
+  }
+  .why-item:hover { border-color: var(--accent2); }
+
+  .why-num {
+    font-size: 3.5rem;
+    font-weight: 900;
+    color: rgba(124,58,237,0.2);
+    line-height: 1;
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+    width: 60px;
+    text-align: right;
+  }
+
+  .why-content {}
+
+  .why-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 6px;
+  }
+
+  .why-desc {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+  .why-desc strong { color: var(--accent2); }
+
+  /* ══════════════════════════════════
+     SLIDE 12 — THE ASK
+  ══════════════════════════════════ */
+  #slide-12 {
+    background: radial-gradient(ellipse 70% 50% at 50% 50%, rgba(124,58,237,0.12) 0%, transparent 70%), var(--bg);
+  }
+
+  .ask-raise {
+    font-size: 4rem;
+    font-weight: 900;
+    color: white;
+    text-align: center;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .ask-raise span { color: var(--accent2); }
+
+  .ask-sub {
+    font-size: 1rem;
+    color: var(--text-muted);
+    text-align: center;
+    margin-bottom: 44px;
+  }
+
+  .ask-funds {
+    max-width: 560px;
+    width: 100%;
+    margin-bottom: 44px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .fund-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .fund-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .fund-label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  .fund-pct {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--accent2);
+  }
+
+  .fund-bar-bg {
+    height: 6px;
+    background: var(--surface2);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .fund-bar {
+    height: 100%;
+    border-radius: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    transition: width 0.8s ease 0.3s;
+  }
+
+  .ask-philosophy {
+    font-size: 1rem;
+    color: var(--text-muted);
+    text-align: center;
+    max-width: 540px;
+    line-height: 1.6;
+    margin-bottom: 32px;
+  }
+  .ask-philosophy strong { color: var(--text); }
+
+  .ask-contact {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+  }
+
+  .ask-contact-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  .ask-contact-sep {
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: var(--text-dim);
+  }
+
+  .ask-logo {
+    margin-bottom: 20px;
+  }
+
+  /* ══════════════════════════════════
+     UTILITIES
+  ══════════════════════════════════ */
+  .flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .w-full { width: 100%; }
+  .max-w-900 { max-width: 900px; }
+</style>
+</head>
+<body>
+
+<!-- Progress bar -->
+<div id="progress-bar" style="width: 8.33%"></div>
+
+<!-- Deck wrapper -->
+<div id="deck">
+
+  <!-- ═══════════════════════════════
+       SLIDE 1 — TITLE
+  ═══════════════════════════════ -->
+  <section class="slide" id="slide-1">
+    <!-- Particles -->
+    <div class="particles" id="particles"></div>
+
+    <div class="title-logo">
+      <!-- Sigil SVG logo: circle + 10-point star + inner circle -->
+      <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Outer glow ring -->
+        <circle cx="40" cy="40" r="38" stroke="url(#logo-grad)" stroke-width="1.5" opacity="0.4"/>
+        <!-- Main circle ring -->
+        <circle cx="40" cy="40" r="34" stroke="url(#logo-grad)" stroke-width="2"/>
+        <!-- 10-point star -->
+        <polygon points="
+          40,10
+          43.09,21.18
+          54.02,14.5
+          50.91,25.68
+          62.79,23.09
+          56.18,32.00
+          68,34.73
+          58.91,41.45
+          68,48.17
+          56.18,50.90
+          62.79,59.81
+          50.91,57.22
+          54.02,68.40
+          43.09,61.72
+          40,72.90
+          36.91,61.72
+          25.98,68.40
+          29.09,57.22
+          17.21,59.81
+          23.82,50.90
+          12,48.17
+          21.09,41.45
+          12,34.73
+          23.82,32.00
+          17.21,23.09
+          29.09,25.68
+          25.98,14.5
+          36.91,21.18
+        " fill="url(#logo-grad)" opacity="0.25"/>
+        <!-- Star outline -->
+        <polygon points="
+          40,13
+          42.8,22.5
+          52.5,16.5
+          49.7,26.0
+          60.5,23.8
+          54.5,31.5
+          65.5,34.0
+          57.5,40.0
+          65.5,46.0
+          54.5,48.5
+          60.5,56.2
+          49.7,54.0
+          52.5,63.5
+          42.8,57.5
+          40,67.0
+          37.2,57.5
+          27.5,63.5
+          30.3,54.0
+          19.5,56.2
+          25.5,48.5
+          14.5,46.0
+          22.5,40.0
+          14.5,34.0
+          25.5,31.5
+          19.5,23.8
+          30.3,26.0
+          27.5,16.5
+          37.2,22.5
+        " stroke="url(#logo-grad)" stroke-width="1.2" fill="none"/>
+        <!-- Inner circle -->
+        <circle cx="40" cy="40" r="12" fill="url(#logo-grad-inner)" opacity="0.9"/>
+        <circle cx="40" cy="40" r="7" fill="#7C3AED" opacity="0.6"/>
+        <!-- Center dot -->
+        <circle cx="40" cy="40" r="3" fill="white" opacity="0.9"/>
+        <defs>
+          <linearGradient id="logo-grad" x1="0" y1="0" x2="80" y2="80">
+            <stop offset="0%" stop-color="#7C3AED"/>
+            <stop offset="100%" stop-color="#A855F7"/>
+          </linearGradient>
+          <radialGradient id="logo-grad-inner" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#C084FC"/>
+            <stop offset="100%" stop-color="#7C3AED"/>
+          </radialGradient>
+        </defs>
+      </svg>
+    </div>
+
+    <div class="title-name">Sigil</div>
+    <div class="title-tagline">"Turn invisible expertise into tangible AI agents."</div>
+    <div class="title-sub">The Developer Intelligence Platform</div>
+    <div class="title-badge"><span>◈</span> Seed Round · 2025</div>
+  </section>
+
+  <!-- ═══════════════════════════════
+       SLIDE 2 — THE PROBLEM
+  ═══════════════════════════════ -->
+  <section class="slide" id="slide-2">
+    <div class="slide-label">The Problem</div>
+    <div class="slide-title">Your best engineers are <span>walking knowledge vaults.</span></div>
+
+    <div class="stat-cards">
+      <div class="stat-card">
+        <div class="stat-num">47%</div>
+        <div class="stat-desc">of institutional knowledge disappears when a senior engineer leaves the company</div>
+        <div class="stat-source">Source: McKinsey &amp; Company</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">6 mo</div>
+        <div class="stat-desc">average time to onboard a new engineer to an unfamiliar, complex codebase</div>
+        <div class="stat-source">Source: Stack Overflow Survey 2024</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">$250K</div>
+        <div class="stat-desc">average total cost of losing a senior engineer's expertise and replacing them</div>
+        <div class="stat-source">Source: SHRM Workforce Report</div>
+      </div>
+    </div>
+
+    <div class="problem-insight">
+      <strong>The problem isn't losing the person.</strong><br>
+      It's losing what they knew — the patterns, the instincts, the unwritten rules that lived only in their head and their git history.
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════
+       SLIDE 3 — THE INSIGHT
+  ═══════════════════════════════ -->
+  <section class="slide" id="slide-3">
+    <div class="slide-label">The Insight</div>
+    <div class="slide-title">Every commit is a thought.<br><span>Every repo is a mind.</span></div>
+
+    <div class="insight-grid">
+      <div class="insight-box">
+        <span class="insight-icon">🔬</span>
+        <div class="insight-text">Commits reveal decision patterns — what changed, why, and how often</div>
+      </div>
+      <div class="insight-box">
+        <span class="insight-icon">🗺</span>
+        <div class="insight-text">File paths map feature ownership — who truly built what and knows it deepest</div>
+      </div>
+      <div class="insight-box">
+        <span class="insight-icon">💬</span>
+        <div class="insight-text">PR threads expose communication style — how they think, review, and teach others</div>
+      </div>
+      <div class="insight-box">
+        <span class="insight-icon">🧬</span>
+        <div class="insight-text">Diffs encode technical DNA — the micro-patterns that define their engineering philosophy</div>
+      </div>
+    </div>
+
+    <div class="insight-footer">
+      A developer's entire intellectual fingerprint lives in their git history.<br>
+      <strong>Most companies never look.</strong>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════
+       SLIDE 4 — THE SOLUTION
+  ═══════════════════════════════ -->
+  <section class="slide" id="slide-4">
+    <div class="slide-label">The Solution</div>
+    <div class="slide-title">Sigil reads the repo. Extracts the mind.<br><span>Clones the expertise.</span></div>
+
+    <div class="flow-steps">
+      <div class="flow-step">
+        <div class="step-num">Step 01</div>
+        <div class="step-icon">🎯</div>
+        <div class="step-title">Point</div>
+        <div class="step-desc">Paste any GitHub or Azure DevOps repo URL with a developer username. That's it.</div>
+      </div>
+      <div class="flow-connector"><div class="flow-connector-arrow"></div></div>
+      <div class="flow-step">
+        <div class="step-num">Step 02</div>
+        <div class="step-icon">⚡</div>
+        <div class="step-title">Extract</div>
+        <div class="step-desc">Sigil reads commits, PRs, diffs, comment threads, work items, and the full file tree.</div>
+      </div>
+      <div class="flow-connector"><div class="flow-connector-arrow"></div></div>
+      <div class="flow-step">
+        <div class="step-num">Step 03</div>
+        <div class="step-icon">🚀</div>
+        <div class="step-title">Deploy</div>
+        <div class="step-desc">Receive soul.md + identity.md + skill sigil — ready to drop into any AI agent.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════
+       SLIDE 5 — WHAT SIGIL SEES
+  ═══════════════════════════════ -->
+  <section class="slide" id="slide-5">
+    <div class="slide-label">Product</div>
+    <div class="slide-title">The deepest developer analysis<br><span>ever built.</span></div>
+
+    <div class="sees-layout">
+      <div>
+        <div style="font-size:0.75rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-dim);margin-bottom:14px;">Signal Sources</div>
+        <div class="signals-list">
+          <div class="signal-item"><span class="signal-icon">📝</span>Git commit history (up to 500 commits)</div>
+          <div class="signal-item"><span class="signal-icon">🔀</span>Code diffs &amp; file-level changes</div>
+          <div class="signal-item"><span class="signal-icon">🔃</span>Pull request bodies &amp; titles</div>
+          <div class="signal-item"><span class="signal-icon">💬</span>PR comment threads (authored &amp; received)</div>
+          <div class="signal-item"><span class="signal-icon">📋</span>Work items &amp; feature tickets</div>
+          <div class="signal-item"><span class="signal-icon">🗂</span>Repository structure &amp; manifest files</div>
+        </div>
+        <div class="sees-badge" style="text-align:left;margin-top:16px;">7 signal sources · analyzed by Claude Sonnet</div>
+      </div>
+
+      <!-- Decorative mind map -->
+      <div class="mind-map">
+        <!-- Connection lines -->
+        <svg style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+          <line x1="150" y1="150" x2="150" y2="40"  stroke="url(#line-grad)" stroke-width="1.5" opacity="0.5"/>
+          <line x1="150" y1="150" x2="255" y2="95"  stroke="url(#line-grad)" stroke-width="1.5" opacity="0.5"/>
+          <line x1="150" y1="150" x2="255" y2="205" stroke="url(#line-grad)" stroke-width="1.5" opacity="0.5"/>
+          <line x1="150" y1="150" x2="150" y2="260" stroke="url(#line-grad)" stroke-width="1.5" opacity="0.5"/>
+          <line x1="150" y1="150" x2="45"  y2="205" stroke="url(#line-grad)" stroke-width="1.5" opacity="0.5"/>
+          <line x1="150" y1="150" x2="45"  y2="95"  stroke="url(#line-grad)" stroke-width="1.5" opacity="0.5"/>
+          <defs>
+            <linearGradient id="line-grad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#7C3AED"/>
+              <stop offset="100%" stop-color="#A855F7" stop-opacity="0.3"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <!-- Center -->
+        <div class="mm-center" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)">◈</div>
+        <!-- Nodes -->
+        <div class="mm-node" style="top:12%;left:50%;transform:translateX(-50%)">📝</div>
+        <div class="mm-node" style="top:24%;right:8%;transform:translateY(-50%)">🔀</div>
+        <div class="mm-node" style="bottom:24%;right:8%;transform:translateY(50%)">🔃</div>
+        <div class="mm-node" style="bottom:12%;left:50%;transform:translateX(-50%)">💬</div>
+        <div class="mm-node" style="bottom:24%;left:8%;transform:translateY(50%)">📋</div>
+        <div class="mm-node" style="top:24%;left:8%;transform:translateY(-50%)">🗂</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════
+       SLIDE 6 — THE OUTPUT
+  ═══════════════════════════════ -->
+  <section class="slide" id="slide-6">
+    <div class="slide-label">The Output</div>
+    <div class="slide-title">Three artifacts.<br><span>Infinite leverage.</span></div>
+
+    <div class="output-cards">
+      <div class="output-card">
+        <div class="output-filename">profile.json</div>
+        <div class="output-card-title">Skill Tree &amp; DNA</div>
+        <div class="output-card-desc">Skill tree, feature ownership map, engineering patterns, technical philosophy, commit DNA, and the one thing they do better than anyone.</div>
+      </div>
+      <div class="output-card">
+        <div class="output-filename">identity.md</div>
+        <div class="output-card-title">Agent Identity File</div>
+        <div class="output-card-desc">First-person agent identity. Who they are, what they're expert at, how they approach problems, and what they value in code.</div>
+      </div>
+      <div class="output-card">
+        <div class="output-filename">soul.md</div>
+        <div class="output-card-title">Character &amp; Instincts</div>
+        <div class="output-card-desc">The agent's character, instincts, and inner voice. What makes them fundamentally different from a generic AI assistant.</div>
+      </div>
+    </div>
+
+    <div class="output-footer">
+      <strong>Drop these files into any Claude agent.</strong><br>
+      Instant senior engineer on demand.
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════
+       SLIDE 7 — USE CASES
+  ═══════════════════════════════ -->
+  <section class="slide" id="slide-7">
+    <div class="slide-label">Use Cases</div>
+    <div class="slide-title">Four ways enterprises <span>use Sigil.</span></div>
+
+    <div class="usecase-grid">
+      <div class="usecase-card">
+        <span class="usecase-emoji">🚀</span>
+        <div class="usecase-title">AI-Augmented Onboarding</div>
+        <div class="usecase-desc">New engineers chat with an AI trained on your codebase's top contributors. <strong>6-month ramp → 2 weeks.</strong></div>
+      </div>
+      <div class="usecase-card">
+        <span class="usecase-emoji">🧠</span>
+        <div class="usecase-title">Institutional Memory</div>
+        <div class="usecase-desc">Capture expertise before engineers leave. Build your company's <strong>permanent brain</strong> that survives every departure.</div>
+      </div>
+      <div class="usecase-card">
+        <span class="usecase-emoji">🔍</span>
+        <div class="usecase-title">Talent Intelligence</div>
+        <div class="usecase-desc">Understand who truly owns which features. Make promotion and staffing decisions with <strong>evidence, not politics.</strong></div>
+      </div>
+      <div class="usecase-card">
+        <span class="usecase-emoji">🤖</span>
+        <div class="usecase-title">Expert AI Agents</div>
+        <div class="usecase-desc">Deploy AI agents that think like your best engineers for <strong>code review, architecture advice,</strong> and debugging.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════
+       SLIDE 8 — MARKET
+  ═══════════════════════════════ -->
+  <section class="slide" id="slide-8">
+    <div class="slide-label">Market</div>
+    <div class="slide-title">A market at the intersection of<br><span>three explosions.</span></div>
+
+    <div class="market-circles">
+      <div class="market-circle mc-1">
+        <div class="mc-label">Developer Tools</div>
+        <div class="mc-tam">$27B</div>
+        <div class="mc-desc">TAM · 2024</div>
+      </div>
+      <div class="market-circle mc-2">
+        <div class="mc-label">AI Agents</div>
+        <div class="mc-tam">$47B</div>
+        <div class="mc-desc">projected by 2030<br>fastest growing</div>
+      </div>
+      <div class="market-circle mc-3">
+        <div class="mc-label">Talent Intelligence</div>
+        <div class="mc-tam">$15B</div>
+        <div class="mc-desc">TAM · 2024</div>
+      </div>
+    </div>
+
+    <div class="market-sam">
+      Sigil sits at the intersection. Total SAM: <strong>$8B</strong>
+    </div>
+    <div class="market-sources">Sources: Gartner Developer Tools Report 2024 · MarketsandMarkets AI Agents Forecast · Bersin Talent Intelligence Market Analysis</div>
+  </section>
+
+  <!-- ═══════════════════════════════
+       SLIDE 9 — BUSINESS MODEL
+  ═══════════════════════════════ -->
+  <section class="slide" id="slide-9">
+    <div class="slide-label">Business Model</div>
+    <div class="slide-title">Simple SaaS. Land with individuals.<br><span>Expand with enterprises.</span></div>
+
+    <div class="pricing-cards">
+      <div class="pricing-card">
+        <div class="pricing-tier">Starter</div>
+        <div class="pricing-price">Free</div>
+        <ul class="pricing-features">
+          <li>3 sigils per month</li>
+          <li>GitHub only</li>
+          <li>Public repos</li>
+          <li>Core 3 artifacts</li>
+        </ul>
+      </div>
+      <div class="pricing-card featured">
+        <div class="pricing-badge">Most Popular</div>
+        <div class="pricing-tier">Team</div>
+        <div class="pricing-price">$49<sub>/seat/mo</sub></div>
+        <ul class="pricing-features">
+          <li>Unlimited sigils</li>
+          <li>GitHub + Azure DevOps</li>
+          <li>Private repos</li>
+          <li>Full API access</li>
+          <li>Team analytics</li>
+        </ul>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-tier">Enterprise</div>
+        <div class="pricing-price">Custom</div>
+        <ul class="pricing-features">
+          <li>SSO &amp; on-prem deploy</li>
+          <li>Custom model fine-tuning</li>
+          <li>SLA &amp; dedicated support</li>
+          <li>Audit logs &amp; compliance</li>
+          <li>Professional services</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="nrr-note">
+      Net revenue retention target: <strong>140%+</strong> — enterprises naturally expand as they clone more engineers and add new repos. Land one team, expand to the org.
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════
+       SLIDE 10 — TRACTION
+  ═══════════════════════════════ -->
+  <section class="slide" id="slide-10">
+    <div class="slide-label">Traction</div>
+    <div class="slide-title">Early <span>signal.</span></div>
+
+    <div class="traction-grid">
+      <div class="traction-box">
+        <div class="traction-metric">Day 1</div>
+        <div class="traction-label">Built &amp; deployed — fully functional product from day zero</div>
+      </div>
+      <div class="traction-box">
+        <div class="traction-metric">7</div>
+        <div class="traction-label">Signal sources — deepest repo analysis available anywhere</div>
+      </div>
+      <div class="traction-box">
+        <div class="traction-metric">ADO+GH</div>
+        <div class="traction-label">Only tool supporting both major enterprise VCS platforms</div>
+      </div>
+      <div class="traction-box">
+        <div class="traction-metric">Claude</div>
+        <div class="traction-label">Native — built on the world's most capable coding AI model</div>
+      </div>
+    </div>
+
+    <div class="traction-quote">
+      <p>"This is the first tool that actually makes me feel like I could clone myself into an agent. I ran it on my own repo and it knew things about how I code that I'd never written down."</p>
+      <cite>— Beta user, Staff Engineer at a Series B startup</cite>
+    </div>
+
+    <div class="traction-note">Pre-revenue · Seeking seed capital to scale GTM and engineering capacity</div>
+  </section>
+
+  <!-- ═══════════════════════════════
+       SLIDE 11 — WHY NOW
+  ═══════════════════════════════ -->
+  <section class="slide" id="slide-11">
+    <div class="slide-label">Why Now</div>
+    <div class="slide-title">Three forces creating<br><span>the perfect moment.</span></div>
+
+    <div class="why-now-list">
+      <div class="why-item">
+        <div class="why-num">01</div>
+        <div class="why-content">
+          <div class="why-title">AI agents went from demo to deployment</div>
+          <div class="why-desc">Enterprises are actively deploying agents in 2025. They need <strong>expert AI, not generic AI.</strong> Sigil is the bridge from a blank agent to a domain-expert agent.</div>
+        </div>
+      </div>
+      <div class="why-item">
+        <div class="why-num">02</div>
+        <div class="why-content">
+          <div class="why-title">Software teams are getting smaller, faster</div>
+          <div class="why-desc">AI is compressing team sizes. The leverage of each senior engineer is 10×. <strong>Capturing their expertise is now existential</strong> — not a nice-to-have.</div>
+        </div>
+      </div>
+      <div class="why-item">
+        <div class="why-num">03</div>
+        <div class="why-content">
+          <div class="why-title">Git is the world's largest knowledge graph</div>
+          <div class="why-desc"><strong>400M+ repos on GitHub alone.</strong> No one has systematically mined it for human expertise at scale — until now. The data has been there all along.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════
+       SLIDE 12 — THE ASK
+  ═══════════════════════════════ -->
+  <section class="slide" id="slide-12">
+    <div class="ask-logo">
+      <svg width="44" height="44" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="40" cy="40" r="34" stroke="url(#ask-grad)" stroke-width="2"/>
+        <polygon points="40,13 42.8,22.5 52.5,16.5 49.7,26.0 60.5,23.8 54.5,31.5 65.5,34.0 57.5,40.0 65.5,46.0 54.5,48.5 60.5,56.2 49.7,54.0 52.5,63.5 42.8,57.5 40,67.0 37.2,57.5 27.5,63.5 30.3,54.0 19.5,56.2 25.5,48.5 14.5,46.0 22.5,40.0 14.5,34.0 25.5,31.5 19.5,23.8 30.3,26.0 27.5,16.5 37.2,22.5" stroke="url(#ask-grad)" stroke-width="1.2" fill="url(#ask-grad)" opacity="0.2"/>
+        <circle cx="40" cy="40" r="12" fill="url(#ask-grad)" opacity="0.8"/>
+        <circle cx="40" cy="40" r="3" fill="white" opacity="0.9"/>
+        <defs>
+          <linearGradient id="ask-grad" x1="0" y1="0" x2="80" y2="80">
+            <stop offset="0%" stop-color="#7C3AED"/>
+            <stop offset="100%" stop-color="#A855F7"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+
+    <div class="slide-label">The Ask</div>
+    <div class="ask-raise">Raising <span>$2M</span> Seed</div>
+    <div class="ask-sub">Use of funds</div>
+
+    <div class="ask-funds">
+      <div class="fund-item">
+        <div class="fund-header">
+          <span class="fund-label">Engineering — API scale, model fine-tuning, IDE plugins</span>
+          <span class="fund-pct">60%</span>
+        </div>
+        <div class="fund-bar-bg">
+          <div class="fund-bar" style="width:60%"></div>
+        </div>
+      </div>
+      <div class="fund-item">
+        <div class="fund-header">
+          <span class="fund-label">GTM — Enterprise sales, developer community</span>
+          <span class="fund-pct">25%</span>
+        </div>
+        <div class="fund-bar-bg">
+          <div class="fund-bar" style="width:25%"></div>
+        </div>
+      </div>
+      <div class="fund-item">
+        <div class="fund-header">
+          <span class="fund-label">Operations — Infrastructure, legal, team</span>
+          <span class="fund-pct">15%</span>
+        </div>
+        <div class="fund-bar-bg">
+          <div class="fund-bar" style="width:15%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ask-philosophy">
+      We're building the layer between <strong>human expertise and AI capability.</strong><br>
+      Every great engineer deserves to be infinite.
+    </div>
+
+    <div class="ask-contact">
+      <div class="ask-contact-item">◈ sigil.ai</div>
+      <div class="ask-contact-sep"></div>
+      <div class="ask-contact-item">hello@sigil.ai</div>
+    </div>
+  </section>
+
+</div><!-- end #deck -->
+
+<!-- Navigation -->
+<div id="nav">
+  <button class="nav-btn" id="btn-prev" disabled>←</button>
+  <div id="dots"></div>
+  <span id="slide-counter">1 / 12</span>
+  <button class="nav-btn" id="btn-next">→</button>
+</div>
+
+<script>
+  const TOTAL = 12;
+  let current = 0;
+
+  const deck = document.getElementById('deck');
+  const progressBar = document.getElementById('progress-bar');
+  const counter = document.getElementById('slide-counter');
+  const btnPrev = document.getElementById('btn-prev');
+  const btnNext = document.getElementById('btn-next');
+  const dotsContainer = document.getElementById('dots');
+
+  // Build dots
+  for (let i = 0; i < TOTAL; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'dot' + (i === 0 ? ' active' : '');
+    dot.addEventListener('click', () => goTo(i));
+    dotsContainer.appendChild(dot);
+  }
+
+  function goTo(index) {
+    if (index < 0 || index >= TOTAL) return;
+    current = index;
+    deck.style.transform = `translateX(-${current * 100}vw)`;
+
+    // Progress bar
+    const pct = ((current + 1) / TOTAL) * 100;
+    progressBar.style.width = pct + '%';
+
+    // Counter
+    counter.textContent = `${current + 1} / ${TOTAL}`;
+
+    // Buttons
+    btnPrev.disabled = current === 0;
+    btnNext.disabled = current === TOTAL - 1;
+
+    // Dots
+    Array.from(dotsContainer.children).forEach((d, i) => {
+      d.classList.toggle('active', i === current);
+    });
+  }
+
+  btnPrev.addEventListener('click', () => goTo(current - 1));
+  btnNext.addEventListener('click', () => goTo(current + 1));
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') goTo(current + 1);
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   goTo(current - 1);
+  });
+
+  // ── Particle generator (slide 1 only, CSS-based) ──
+  (function buildParticles() {
+    const container = document.getElementById('particles');
+    const count = 28;
+    for (let i = 0; i < count; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      const size = Math.random() * 4 + 1.5;
+      const left = Math.random() * 100;
+      const delay = Math.random() * 18;
+      const duration = 12 + Math.random() * 14;
+      const opacity = 0.2 + Math.random() * 0.5;
+      p.style.cssText = `
+        width:${size}px;
+        height:${size}px;
+        left:${left}%;
+        bottom:-10px;
+        animation-delay:${delay}s;
+        animation-duration:${duration}s;
+        box-shadow: 0 0 ${size * 2}px var(--accent2);
+        opacity: 0;
+      `;
+      container.appendChild(p);
+    }
+  })();
+</script>
+</body>
+</html>
