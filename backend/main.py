@@ -101,30 +101,57 @@ def _parse_repo_url(repo_input: str) -> tuple[str, str, str]:
     """
     Returns (source, owner_or_org, repo) where source is 'github' or 'ado'.
     For ADO, owner_or_org is 'org/project' packed together — callers split on '/'.
+
+    Accepted formats:
+      GitHub:   owner/repo
+                https://github.com/owner/repo
+                github.com/owner/repo
+                https://github.com/owner/repo.git
+      ADO:      https://{org}.visualstudio.com/{project}/_git/{repo}
+                https://dev.azure.com/{org}/{project}/_git/{repo}
     """
     repo_input = repo_input.strip().rstrip("/")
+    # Normalise: add scheme if bare domain given
+    if repo_input.startswith("github.com/") or repo_input.startswith("dev.azure.com/"):
+        repo_input = "https://" + repo_input
 
-    # Azure DevOps: https://{org}.visualstudio.com/{project}/_git/{repo}
-    ado_match = re.match(
-        r"https?://([^.]+)\.visualstudio\.com/([^/]+)/_git/([^/]+)",
+    # Azure DevOps legacy: https://{org}.visualstudio.com/{project}/_git/{repo}
+    ado_vs = re.match(
+        r"https?://([^.]+)\.visualstudio\.com/([^/]+)/_git/([^/?#]+)",
         repo_input,
     )
-    if ado_match:
-        org, project, repo = ado_match.group(1), ado_match.group(2), ado_match.group(3)
-        return "ado", f"{org}/{project}", repo
+    if ado_vs:
+        org, project, repo = ado_vs.group(1), ado_vs.group(2), ado_vs.group(3)
+        return "ado", f"{org}/{project}", repo.rstrip(".git")
+
+    # Azure DevOps new: https://dev.azure.com/{org}/{project}/_git/{repo}
+    ado_new = re.match(
+        r"https?://dev\.azure\.com/([^/]+)/([^/]+)/_git/([^/?#]+)",
+        repo_input,
+    )
+    if ado_new:
+        org, project, repo = ado_new.group(1), ado_new.group(2), ado_new.group(3)
+        return "ado", f"{org}/{project}", repo.rstrip(".git")
 
     # GitHub full URL
-    if repo_input.startswith("http"):
-        parts = re.sub(r"https?://github\.com/", "", repo_input).split("/")
-        if len(parts) < 2:
-            raise ValueError("Invalid GitHub repo URL")
-        return "github", parts[0], parts[1]
+    if "github.com" in repo_input:
+        path = re.sub(r"https?://github\.com/", "", repo_input).rstrip("/")
+        parts = path.split("/")
+        if len(parts) < 2 or not parts[0] or not parts[1]:
+            raise ValueError(f"Invalid GitHub URL — expected github.com/owner/repo, got: {repo_input!r}")
+        return "github", parts[0], parts[1].removesuffix(".git")
 
     # owner/repo shorthand
     parts = repo_input.split("/")
-    if len(parts) != 2:
-        raise ValueError("Expected format: owner/repo, full GitHub URL, or full ADO URL")
-    return "github", parts[0], parts[1]
+    if len(parts) == 2 and parts[0] and parts[1]:
+        return "github", parts[0], parts[1].removesuffix(".git")
+
+    raise ValueError(
+        f"Unrecognised repo format: {repo_input!r}. "
+        "Expected: owner/repo · https://github.com/owner/repo · "
+        "https://dev.azure.com/org/project/_git/repo · "
+        "https://org.visualstudio.com/project/_git/repo"
+    )
 
 
 # ── Models ────────────────────────────────────────────────────────────────────
