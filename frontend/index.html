@@ -92,10 +92,12 @@
     .tag{font-size:.7rem;font-weight:600;padding:3px 10px;border-radius:20px;background:rgba(124,58,237,.12);color:#C4B5FD;border:1px solid rgba(124,58,237,.25)}
     .superpower-pill{display:inline-flex;align-items:center;gap:.4rem;padding:.4rem .9rem;background:rgba(245,158,11,.08);border:1px solid rgba(168,85,247,.4);border-radius:20px;color:#C084FC;font-size:.78rem;font-weight:700;margin-top:.75rem}
     .profile-actions{display:flex;gap:.5rem;margin-top:1.25rem;flex-wrap:wrap}
-    .stat-row{display:flex;gap:1.5rem;margin-top:.75rem}
+    .stat-row{display:flex;gap:1.5rem;margin-top:.75rem;align-items:center;flex-wrap:wrap}
     .stat{text-align:center}
     .stat-val{font-size:1.25rem;font-weight:800;color:var(--text-1)}
     .stat-lbl{font-size:.68rem;color:var(--text-3);text-transform:uppercase;letter-spacing:.5px}
+    .cost-pill{display:inline-flex;align-items:center;gap:.35rem;padding:.3rem .75rem;background:rgba(16,185,129,.07);border:1px solid rgba(16,185,129,.25);border-radius:20px;font-size:.72rem;font-weight:600;color:#34D399;margin-left:.25rem;white-space:nowrap;cursor:default}
+    .cost-pill .cost-tokens{font-size:.65rem;color:rgba(52,211,153,.65);margin-left:.2rem}
 
     /* ── SECTION HEADER ── */
     .section-header{font-size:.7rem;font-weight:700;color:var(--text-3);letter-spacing:1px;text-transform:uppercase;margin-bottom:1rem;padding-bottom:.5rem;border-bottom:1px solid var(--border)}
@@ -709,8 +711,26 @@ function renderResults(p) {
   if (cacheKey) _pushProfileUrl(cacheKey);
 }
 
+function _fmtCost(cost) {
+  if (!cost) return null;
+  // Sonnet 4.6 pricing: $3/M input, $15/M output
+  const usd = (cost.input_tokens / 1e6 * 3) + (cost.output_tokens / 1e6 * 15);
+  const totalTokens = cost.input_tokens + cost.output_tokens;
+  const tokStr = totalTokens >= 1000
+    ? (totalTokens / 1000).toFixed(1) + 'K tokens'
+    : totalTokens + ' tokens';
+  return { usd, tokStr };
+}
+
 function renderProfileHero(p) {
   const el = document.getElementById('profile-hero');
+  const costInfo = _fmtCost(p.cost);
+  const costPill = costInfo
+    ? `<span class="cost-pill" title="${costInfo.tokStr} — input + output across all 3 Claude calls">
+        ✦ $${costInfo.usd.toFixed(3)} Claude cost
+        <span class="cost-tokens">${costInfo.tokStr}</span>
+       </span>`
+    : '';
   el.innerHTML = `
     <div class="avatar-wrap">
       ${p.avatar_url
@@ -733,6 +753,7 @@ function renderProfileHero(p) {
         <div class="stat"><div class="stat-val">${(p.skill_tree||[]).length}</div><div class="stat-lbl">Skill Areas</div></div>
         <div class="stat"><div class="stat-val">${(p.skill_tree||[]).reduce((a,c)=>a+(c.skills||[]).length,0)}</div><div class="stat-lbl">Skills Mapped</div></div>
         <div class="stat"><div class="stat-val">${(p.patterns||[]).length}</div><div class="stat-lbl">Patterns</div></div>
+        ${costPill}
       </div>
       <div class="profile-actions">
         <button class="btn btn-primary" onclick="openChat()" style="background:linear-gradient(135deg,#5B21B6,#A855F7);box-shadow:0 0 18px rgba(124,58,237,.4);font-weight:700">🤖 Chat as Agent →</button>
